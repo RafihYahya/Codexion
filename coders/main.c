@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/20 17:34:46 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/20 17:52:28 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,4 +26,5 @@ int main(int argc, char **argv)
         ERROR("Failed Parsing");
         return (-1);
     }
+    
 }

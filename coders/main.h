@@ -46,6 +46,6 @@ struct s_ArgvParsedConfig {
     char scheduler[3];
 };
 
-int argv_parser_validator(int argc, int argv, struct s_ArgvParsedConfig *s);
+int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s);
 
 #endif
