@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/20 20:49:05 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/20 21:50:16 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ int main(int argc, char **argv)
     struct s_ArgvParsedConfig *pconfig;
 
     pconfig = create_config(argc, argv);
+    DEBUG("ParsedConfig: ",pconfig);
     if (!pconfig)
         return (-1);
 }
