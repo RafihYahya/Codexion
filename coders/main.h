@@ -3,7 +3,11 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include "queue.h"
+#include "thread.h"
+#include "mutex.h"
 #include <stdio.h>
+#include "parser.h"
 
 /* ===== ANSI COLORS ===== */
 #define COLOR_YELLOW "\033[33m"
@@ -35,17 +39,5 @@ do { \
     exit(EXIT_FAILURE); \
 } while (0)
 
-struct s_ArgvParsedConfig {
-    int number_of_coders;
-    int time_to_burnout;
-    int time_to_compile;
-    int time_to_debug;
-    int time_to_refactor;
-    int number_of_compiles_required;
-    int dongle_cooldown;
-    char scheduler[3];
-};
-
-int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s);
 
 #endif
