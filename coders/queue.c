@@ -6,15 +6,12 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:33:11 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/20 22:58:26 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/20 23:06:29 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-#include "queue.h"
 #include "main.h"
-#include <stdlib.h>
-#include <unistd.h>
 
 int init_queue(struct s_Queue **q, void *value, struct s_Queue *next)
 {
@@ -45,4 +42,25 @@ int append_to_queue(struct s_Queue **q, void *value)
 	}
 	tmp->value = value;
 	tmp->next = NULL;
+	return (0);
+}
+
+int pop_from_queue(struct s_Queue **q)
+{
+	struct s_Queue *tmp;
+	struct s_Queue *front;
+
+	if (!q || !*q)
+		return (-1);
+	front = *q;
+	if(!front->next)
+	{
+		free(front);
+		*q = NULL;
+		return(0);
+	}
+	tmp = front->value;
+	*q = tmp;
+	free(front);
+	return (0);
 }
