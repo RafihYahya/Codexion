@@ -17,7 +17,7 @@ int init_usb_mutexes(int num_usb, struct s_UsbDongleState *usb_mutexes)
             free(usb_mutexes);
             return (-1);
         }
-        usb_mutexes[i].usb_cooldwon = -1;
+        usb_mutexes[i].recov_time = -1;
         i++;
     }
 
