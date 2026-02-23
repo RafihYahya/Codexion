@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/22 22:15:15 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/23 16:35:16 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     }
     // create usb dongles and set mutexes
     // create coders(threads) and setup each one state
+    // monitor thread
     // init scheduler
     // output
 }
