@@ -43,10 +43,7 @@ int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *csta
             ERROR("Failed Allocation");
             int j = 0;
             while (j < i)
-            {
-                free(cstates[j].arg);
-                j++;
-            }
+                free(cstates[j++].arg);
             return (free(thd), free(cstates), -1);
         }
         cstates[i].id = i;
