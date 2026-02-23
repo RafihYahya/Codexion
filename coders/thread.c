@@ -35,12 +35,18 @@ int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *csta
         if (err < 0)
         {
             ERROR("Failed creation of threads");
-            return (free(thd),free(cstates), -1);
+            return (free(thd), free(cstates), -1);
         }
         carg = malloc(sizeof(struct s_CoderArg));
         if (!carg)
         {
             ERROR("Failed Allocation");
+            int j = 0;
+            while (j < i)
+            {
+                free(cstates[j].arg);
+                j++;
+            }
             return (free(thd), free(cstates), -1);
         }
         cstates[i].id = i;
@@ -49,6 +55,7 @@ int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *csta
         cstates[i].l_usb = NULL;
         cstates[i].r_usb = NULL;
         cstates[i].arg = carg;
+        i++;
     }
     DEBUG("End of Thread Init function");
     return (0);
