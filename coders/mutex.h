@@ -5,6 +5,6 @@ struct s_UsbDongleState {
     unsigned long recov_time;
 };
 
-int init_usb_mutexes(int num_usb, struct s_UsbDongleState *usb_mutexes);
+int init_usb_mutexes(int num_usb, struct s_UsbDongleState **usb_mutexes);
 
 

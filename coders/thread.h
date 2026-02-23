@@ -23,5 +23,5 @@ struct s_CoderState {
 };
 
 
-int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *cstates, pthread_t *thd);
-
+int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState **cstates,
+    struct s_UsbDongleState **mutexes,  pthread_t **thd);

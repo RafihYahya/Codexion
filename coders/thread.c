@@ -6,7 +6,8 @@ void *coder_thread(void *arg)
 }
 
 
-int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *cstates, struct s_UsbDongleState *mutexes,  pthread_t *thd)
+int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState **cstates,
+    struct s_UsbDongleState **mutexes,  pthread_t **thd)
 {
     int                i;
     int                err;
@@ -22,8 +23,8 @@ int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *csta
         return (-1);
     }
     DEBUG("Setting up states and thread allocations");
-    cstates = malloc(sizeof(struct s_CoderState) * arg->number_of_coders);
-    thd = malloc(sizeof(pthread_t) * arg->number_of_coders);
+    *cstates = malloc(sizeof(struct s_CoderState) * arg->number_of_coders);
+    *thd = malloc(sizeof(pthread_t) * arg->number_of_coders);
     if (!thd || !cstates)
     {
         ERROR("Failed Allocation");
@@ -43,15 +44,15 @@ int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *csta
             ERROR("Failed Allocation");
             int j = 0;
             while (j < i)
-                free(cstates[j++].arg);
+                free((*cstates[j++]).arg);
             return (free(thd), free(cstates), -1);
         }
-        cstates[i].id = i;
-        cstates[i].gconfig = arg;
-        cstates[i].state = STANDBY;
-        cstates[i].l_usb = &mutexes[i % arg->number_of_coders];
-        cstates[i].r_usb = &mutexes[(i + 1) % arg->number_of_coders]; // not sure if this is correct
-        cstates[i].arg = carg;
+        (*cstates[i]).id = i;
+        (*cstates[i]).gconfig = arg;
+        (*cstates[i]).state = STANDBY;
+        (*cstates[i]).l_usb = &mutexes[i % arg->number_of_coders];
+        (*cstates[i]).r_usb = &mutexes[(i + 1) % arg->number_of_coders]; // not sure if this is correct
+        (*cstates[i]).arg = carg;
         i++;
     }
     DEBUG("End of Thread Init function");
