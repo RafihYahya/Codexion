@@ -1,12 +1,12 @@
 #include "thread.h"
-
+#include "mutex.h"
 void *coder_thread(void *arg)
 {
 
 }
 
 
-int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *cstates, pthread_t *thd)
+int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *cstates, struct s_UsbDongleState *mutexes,  pthread_t *thd)
 {
     int                i;
     int                err;
@@ -16,7 +16,7 @@ int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *csta
     err = 0;
     carg = NULL;
     DEBUG("Creation of Coder Threads along with their corresponding states");
-    if (!arg || cstates || thd)
+    if (!arg || cstates || thd || !mutexes)
     {
         ERROR("Arguments Invalid");
         return (-1);
@@ -52,8 +52,8 @@ int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState *csta
         cstates[i].id = i;
         cstates[i].gconfig = arg;
         cstates[i].state = STANDBY;
-        cstates[i].l_usb = NULL;
-        cstates[i].r_usb = NULL;
+        cstates[i].l_usb = &mutexes[i % arg->number_of_coders];
+        cstates[i].r_usb = &mutexes[(i + 1) % arg->number_of_coders]; // not sure if this is correct
         cstates[i].arg = carg;
         i++;
     }

@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/23 16:35:16 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/23 21:36:33 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv)
     #endif
     return (cfg);
 }
-
 
 int main(int argc, char **argv)
 {
