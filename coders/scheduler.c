@@ -4,7 +4,7 @@ struct s_SchedulerState {
 };
 
 
-int init_scheduler(char *str)
+int init_scheduler(char *str, struct s_Queue *q)
 {
     int err;
 
@@ -17,7 +17,8 @@ int init_scheduler(char *str)
     {
         err = edf_scheduler();
     }
-    else{
+    else 
+    {
         ERROR("Input Invalid");
         return (-1);
     }

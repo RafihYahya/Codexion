@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/23 22:16:13 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/23 23:33:00 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,8 +58,6 @@ int main(int argc, char **argv)
         ERROR("Failed Init of Mutexes");
         return (free(states), free(pconfig), -1); 
     }
-    // create coders(threads) and setup each one state
-    // monitor thread
+    // init monitor
     // init scheduler
-    // output
 }
