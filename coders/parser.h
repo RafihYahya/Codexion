@@ -2,14 +2,15 @@
  #define PARSER_H
 
 struct s_ArgvParsedConfig {
-    int number_of_coders;
-    int time_to_burnout;
-    int time_to_compile;
-    int time_to_debug;
-    int time_to_refactor;
-    int number_of_compiles_required;
-    int dongle_cooldown;
-    char scheduler[5];
+    const int number_of_coders;
+    const int time_to_burnout;
+    const int time_to_compile;
+    const int time_to_debug;
+    const int time_to_refactor;
+    const int number_of_compiles_required;
+    const int dongle_cooldown;
+    int c_turn;
+    const char scheduler[5];
 };
 
 static const struct s_ArgvParsedConfig DEFAULT_CONFIG = {
@@ -20,6 +21,7 @@ static const struct s_ArgvParsedConfig DEFAULT_CONFIG = {
         .time_to_refactor = 60,
         .number_of_compiles_required = 10,
         .dongle_cooldown = 5,
+        .c_turn = 0,
         .scheduler = "fifo"
         };
 
