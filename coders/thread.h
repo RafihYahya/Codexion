@@ -19,6 +19,7 @@ struct s_CoderState {
     struct s_UsbDongleState *l_usb;
     struct s_UsbDongleState *r_usb;
     struct s_CoderArg *arg;
+    struct s_monitorstate *mstate;
     const struct s_ArgvParsedConfig *gconfig;
 };
 

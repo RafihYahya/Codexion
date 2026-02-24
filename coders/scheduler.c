@@ -9,13 +9,15 @@ int init_scheduler(char *str, struct s_Queue *q, struct s_ArgvParsedConfig confi
     int err;
 
     err = 0;
+    struct s_SchedulerState state;
+
     if (strcmp(str, "fifo"))
     {
-        err = fifo_scheduler();
+        err = fifo_scheduler(state);
     }
     else if (strcmp(str, "edf"))
     {
-        err = edf_scheduler();
+        err = edf_scheduler(state);
     }
     else 
     {

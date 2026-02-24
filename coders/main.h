@@ -15,10 +15,16 @@
 #define COLOR_RESET  "\033[0m"
 
 
+struct s_monitorstate {
+    int is_someone_dead;
+    pthread_mutex_t death_mutex;
+};
+
 struct s_globalstate {
     struct s_ArgvParsedConfig *pconfig;
     struct s_UsbDongleState *states;
     struct s_CoderState     *cstates;
+    struct s_monitorstate   *mstate;
     pthread_t           *thd;
 };
 
