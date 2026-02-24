@@ -6,14 +6,15 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:33:11 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/20 23:00:55 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/24 00:55:27 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "main.h"
 
 struct s_Queue {
 
-    void *value;
+    struct s_CoderState *coder;
     struct s_Queue *next;
 };
 

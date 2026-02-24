@@ -6,26 +6,26 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:33:11 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/20 23:06:29 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/24 00:57:44 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-#include "main.h"
+#include "queue.h"
 
-int init_queue(struct s_Queue **q, void *value, struct s_Queue *next)
+int init_queue(struct s_Queue **q, struct s_CoderState *coder, struct s_Queue *next)
 {
 	struct s_Queue *tmp;
 
 	if (!q || !*q)
 		return (-1);
 	tmp = *q;
-	tmp->value = value;
+	tmp->coder = coder;
 	tmp->next = next;
 	return (0);
 }
 
-int append_to_queue(struct s_Queue **q, void *value)
+int append_to_queue(struct s_Queue **q, struct s_CoderState *coder)
 {
 	struct s_Queue *tmp;
 
@@ -40,7 +40,7 @@ int append_to_queue(struct s_Queue **q, void *value)
 		ERROR("Allocation Failed");
 		return (-1);
 	}
-	tmp->value = value;
+	tmp->coder = coder;
 	tmp->next = NULL;
 	return (0);
 }
@@ -59,7 +59,7 @@ int pop_from_queue(struct s_Queue **q)
 		*q = NULL;
 		return(0);
 	}
-	tmp = front->value;
+	tmp = front->coder;
 	*q = tmp;
 	free(front);
 	return (0);
