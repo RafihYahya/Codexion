@@ -1,5 +1,7 @@
 #include "thread.h"
 #include "mutex.h"
+
+
 void *coder_thread(void *arg)
 {
 

@@ -4,7 +4,7 @@ struct s_SchedulerState {
 };
 
 
-int init_scheduler(char *str, struct s_Queue *q)
+int init_scheduler(char *str, struct s_Queue *q, struct s_ArgvParsedConfig config)
 {
     int err;
 
