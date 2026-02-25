@@ -1,23 +1,29 @@
 #include "main.h"
-struct s_SchedulerState {
 
+
+struct s_scheduler {
+    int (*add_task)(struct s_scheduler*, int id, long deadline);
+    int (*remove_task)(struct s_scheduler*, int id);
+    void (*task_finished)(struct s_scheduler *, int id);
+    int (*pick_next)(struct s_scheduler*, int *out_id, long *out_deadline);
+
+    void *data;
 };
 
 
-int init_scheduler(char *str, struct s_Queue *q, struct s_ArgvParsedConfig config)
+int init_scheduler(char *str, struct s_globalstate *gstate)
 {
     int err;
 
     err = 0;
-    struct s_SchedulerState state;
 
     if (strcmp(str, "fifo"))
     {
-        err = fifo_scheduler(state);
+        err = fifo_scheduler();
     }
     else if (strcmp(str, "edf"))
     {
-        err = edf_scheduler(state);
+        err = edf_scheduler();
     }
     else 
     {

@@ -20,9 +20,9 @@ struct s_CoderState {
     struct s_UsbDongleState *r_usb;
     struct s_CoderArg *arg;
     struct s_monitorstate *mstate;
-    const struct s_ArgvParsedConfig *gconfig;
+    const struct s_globalstate *gconfig;
 };
 
 
-int init_coder_threads(struct s_ArgvParsedConfig *arg, struct s_CoderState **cstates,
+int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
     struct s_UsbDongleState **mutexes,  pthread_t **thd);

@@ -3,7 +3,6 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include "queue.h"
 #include "thread.h"
 #include "mutex.h"
 #include <stdio.h>
@@ -17,15 +16,16 @@
 
 struct s_monitorstate {
     int is_someone_dead;
-    pthread_mutex_t death_mutex;
+    pthread_mutex_t death_lock;
 };
 
 struct s_globalstate {
-    struct s_ArgvParsedConfig *pconfig;
-    struct s_UsbDongleState *states;
-    struct s_CoderState     *cstates;
-    struct s_monitorstate   *mstate;
-    pthread_t           *thd;
+    struct s_ArgvParsedConfig   *pconfig;
+    struct s_UsbDongleState     *states;
+    struct s_CoderState         *cstates;
+    struct s_monitorstate       *mstate;
+    struct s_scheduler          *scheduler;
+    pthread_t                   *thd;
 };
 
 

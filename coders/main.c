@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/23 23:33:00 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/25 17:17:31 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,29 +35,32 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    struct s_ArgvParsedConfig *pconfig;
-    struct s_UsbDongleState *states;
-    struct s_CoderState     *cstates;
-    pthread_t           *thd;
-    
-    states = NULL;
-    cstates = NULL;
-    thd = NULL;
-    pconfig = NULL;
-    pconfig = create_config(argc, argv);
+    struct s_globalstate gstate;
+
+    gstate.cstates = NULL;
+    gstate.mstate = NULL;
+    gstate.pconfig = NULL;
+    gstate.thd = NULL;
+    gstate.states = NULL;
+
+    gstate.pconfig = create_config(argc, argv);
     DEBUG("ParsedConfig: ",pconfig);
-    if (!pconfig)
+    if (!gstate.pconfig)
         return (-1);
-    if (init_usb_mutexes(pconfig->number_of_coders, &states) < 0)
+    if (init_usb_mutexes(gstate.pconfig->number_of_coders, &(gstate.states)) < 0)
     {
         ERROR("Failed Init of Mutexes");
-        return (free(states), free(pconfig), -1); 
+        return (free(gstate.states), free(gstate.pconfig), -1); 
     }
-    if (init_coder_threads(pconfig, &cstates, &states, &thd) < 0)
+    // init scheduler
+    if (init_coder_threads(&gstate, &(gstate.cstates), &(gstate.states), &(gstate.thd)) < 0)
     {
         ERROR("Failed Init of Mutexes");
-        return (free(states), free(pconfig), -1); 
+        return (free(gstate.states), free(gstate.pconfig), -1); 
     }
     // init monitor
-    // init scheduler
+    // join monitor
+    // join threads
+    // finish 
+    return (0);
 }
