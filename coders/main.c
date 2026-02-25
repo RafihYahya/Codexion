@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/25 22:52:41 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/25 23:44:47 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,12 @@ int main(int argc, char **argv)
         return (free(gstate.states), free(gstate.pconfig), -1);   
     }
     DEBUG("Finished Setting Scheduler");
+    // Setup print_mutex
+    if (pthread_mutex_init(&(gstate.print_lock), NULL) < 0)
+    {
+        ERROR("Failure Setting up Print Mutex Lock");
+        return (free(gstate.states), free(gstate.pconfig), -1);
+    }
     // Init monitor thread
     DEBUG("Starting Monitor Thread");
     if (init_monitor_thread(&gstate) < 0)

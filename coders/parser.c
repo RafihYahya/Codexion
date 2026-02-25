@@ -21,7 +21,6 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv)
     return (cfg);
 }
 
-
 int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s)
 {
 	return 0;
