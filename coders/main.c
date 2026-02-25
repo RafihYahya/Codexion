@@ -6,61 +6,70 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/25 17:17:31 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/25 22:52:41 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
 
-struct s_ArgvParsedConfig *create_config(int argc, char **argv)
+static void init_gstate(struct s_globalstate *gstate)
 {
-    struct s_ArgvParsedConfig *cfg;
+    gstate->cstates = NULL;
+    gstate->mstate = NULL;
+    gstate->pconfig = NULL;
+    gstate->thd = NULL;
+    gstate->states = NULL;
+    gstate->scheduler = NULL;
 
-    cfg = malloc(sizeof(*cfg));
-    if (!cfg)
-        return (NULL);
-
-    #ifdef TESTING
-    *parsed_argv = DEFAULT_CONFIG;
-    #else
-    if (argv_parser_validator(argc, argv, cfg) < 0)
-        {
-            ERROR("Parsing Error");
-            free(cfg);
-            return NULL;
-        }
-    #endif
-    return (cfg);
+    return ;
 }
 
 int main(int argc, char **argv)
 {
     struct s_globalstate gstate;
 
-    gstate.cstates = NULL;
-    gstate.mstate = NULL;
-    gstate.pconfig = NULL;
-    gstate.thd = NULL;
-    gstate.states = NULL;
-
+    
+    init_gstate(&gstate);
     gstate.pconfig = create_config(argc, argv);
     DEBUG("ParsedConfig: ",pconfig);
-    if (!gstate.pconfig)
+    if (!gstate.pconfig){
+        ERROR("Couldn't Parse Argv");    
         return (-1);
+    }
+    // Init usb mutexes
+    DEBUG("Starting Mutexes ");
     if (init_usb_mutexes(gstate.pconfig->number_of_coders, &(gstate.states)) < 0)
     {
         ERROR("Failed Init of Mutexes");
         return (free(gstate.states), free(gstate.pconfig), -1); 
     }
-    // init scheduler
+    DEBUG("Finished Setting Mutexes");
+    // Init scheduler
+    DEBUG("Starting Scheduler");
+    if (init_scheduler(&gstate) < 0)
+    {
+        ERROR("Can't Init Scheduler");
+        return (free(gstate.states), free(gstate.pconfig), -1);   
+    }
+    DEBUG("Finished Setting Scheduler");
+    // Init monitor thread
+    DEBUG("Starting Monitor Thread");
+    if (init_monitor_thread(&gstate) < 0)
+    {
+        ERROR("Failed Init of monitor thread");
+        return (free(gstate.states), free(gstate.pconfig), -1);
+    }
+    DEBUG("Finished Setting Monitor Thread");
+    // Init coder thread
+    DEBUG("Starting Threads");
     if (init_coder_threads(&gstate, &(gstate.cstates), &(gstate.states), &(gstate.thd)) < 0)
     {
         ERROR("Failed Init of Mutexes");
-        return (free(gstate.states), free(gstate.pconfig), -1); 
+        return (free(gstate.states), free(gstate.pconfig), free(gstate.mstate), -1); 
     }
-    // init monitor
-    // join monitor
-    // join threads
-    // finish 
+    // Join monitor
+    pthread_join(gstate.mstate->monitor, NULL);
+    // Join threads ?
+    DEBUG("End of Program");
     return (0);
 }

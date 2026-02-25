@@ -1,5 +1,4 @@
-#include "thread.h"
-#include "mutex.h"
+#include "main.h"
 
 
 void *coder_thread(void *arg)

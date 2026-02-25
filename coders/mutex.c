@@ -5,9 +5,9 @@ int init_usb_mutexes(int num_usb, struct s_UsbDongleState **usb_mutexes)
     int i = 0;
     int err = 0;
 
-    if (*usb_mutexes)
+    if (!usb_mutexes)
     {
-        ERROR("Must Be Null To Init Correctly");
+        ERROR("Must Not be Null ");
         return (-2);
     }
     *usb_mutexes = malloc(sizeof(struct s_UsbDongleState) * num_usb);
@@ -16,6 +16,7 @@ int init_usb_mutexes(int num_usb, struct s_UsbDongleState **usb_mutexes)
         ERROR("Malloc Has Failed, Just like most of your dreams");
         return (-1);
     }
+    DEBUG("Initiating Mutex");
     while (i < num_usb)
     {
         err = pthread_mutex_init(&(*usb_mutexes[i]).usb_mutex, NULL);
