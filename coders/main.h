@@ -7,11 +7,6 @@
 #include <pthread.h>
 
 
-struct s_monitorstate {
-    int is_someone_dead;
-    pthread_t monitor;
-    pthread_mutex_t death_lock;
-};
 
 struct s_globalstate {
     struct s_ArgvParsedConfig   *pconfig;
@@ -19,8 +14,26 @@ struct s_globalstate {
     struct s_CoderState         *cstates;
     struct s_monitorstate       *mstate;
     struct s_scheduler          *scheduler;
-    pthread_mutex_t             print_lock;
+    pthread_mutex_t              print_lock;
     pthread_t                   *thd;
+};
+
+struct s_node {
+    int curr_id;
+    struct s_node *next;
+};
+
+struct s_fifo_queue
+{
+    struct s_node *front;
+    struct s_node *back;
+    size_t count;
+};
+
+struct s_monitorstate {
+    int is_someone_dead;
+    pthread_t monitor;
+    pthread_mutex_t death_lock;
 };
 
 struct s_scheduler {
