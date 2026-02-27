@@ -101,6 +101,8 @@ struct s_CoderState {
 
 struct s_UsbDongleState {
     pthread_mutex_t usb_mutex;
+    pthread_cond_t usb_rec_cond;
+    int is_available;
     unsigned long recov_time;
 };
 
@@ -141,7 +143,8 @@ int init_monitor_thread(struct s_globalstate *gstate);
 int init_usb_mutexes(int num_usb, struct s_UsbDongleState **usb_mutexes);
 int init_scheduler(struct s_globalstate *gstate);
 int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s);
-int fifo_scheduler(struct s_globalstate *gstate);
+int init_fifo_scheduler(struct s_globalstate *gstate);
+int init_edf_scheduler(struct s_globalstate *gstate);
 int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
     struct s_UsbDongleState **mutexes,  pthread_t **thd);
 
