@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/25 23:44:47 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/27 03:29:45 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     }
     // Init usb mutexes
     DEBUG("Starting Mutexes ");
-    if (init_usb_mutexes(gstate.pconfig->number_of_coders, &(gstate.states)) < 0)
+    if (init_usb_mutexes_conds(gstate.pconfig->number_of_coders, &(gstate.states)) < 0)
     {
         ERROR("Failed Init of Mutexes");
         return (free(gstate.states), free(gstate.pconfig), -1); 

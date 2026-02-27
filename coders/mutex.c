@@ -1,6 +1,6 @@
 #include "main.h"
 
-int init_usb_mutexes(int num_usb, struct s_UsbDongleState **usb_mutexes)
+int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes)
 {
     int i = 0;
     int err = 0;
