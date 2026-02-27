@@ -23,6 +23,7 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv)
 
 int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s)
 {
+    // to-do , implement parser
 	return 0;
 }
 

@@ -3,9 +3,9 @@
 
 int init_scheduler(struct s_globalstate *gstate)
 {
-    int     err;
+    int     r_err;
 
-    err = 0;
+    r_err = 0;
     if (!gstate)
         return (-1);
     gstate->scheduler = malloc(sizeof(struct s_scheduler));
@@ -21,13 +21,13 @@ int init_scheduler(struct s_globalstate *gstate)
     }
     DEBUG("Finished Scheduler Setup");
     if (strcmp(gstate->pconfig->scheduler, "fifo"))
-        err = fifo_scheduler(gstate);
+        r_err = fifo_scheduler(gstate);
     else if (strcmp(gstate->pconfig->scheduler, "edf"))
-        err = edf_scheduler(gstate);
+        r_err = edf_scheduler(gstate);
     else 
     {
         ERROR("Input Invalid");
         return (-1);
     }
-    return (err);
+    return (r_err);
 }

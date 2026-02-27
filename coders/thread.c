@@ -3,7 +3,29 @@
 
 void *coder_thread(void *arg)
 {
+    struct s_CoderState *s_arg;
 
+    s_arg = (struct s_CoderState *)arg;
+
+    while(1)
+    {
+        if (s_arg->state == COMPILE)
+        {
+
+        }
+        else if (s_arg->state == DEBUG)
+        {
+
+        }
+        else if (s_arg->state == REFACTOR)
+        {
+
+        }
+        else
+        {
+            
+        }
+    };
 }
 
 
