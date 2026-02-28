@@ -28,6 +28,7 @@ int init_monitor_thread(struct s_globalstate *gstate)
         return (-1);
     if (pthread_mutex_init(&(gstate->mstate->death_lock), NULL) != 0)
         return (free(gstate->mstate), -1);
+    gstate->mstate->is_someone_dead = 0;
     if (pthread_create(&(gstate->mstate->monitor), NULL, monitor_thread, gstate) != 0 )
     {
         ERROR("Failed Creation of the Thread");

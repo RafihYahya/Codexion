@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/28 01:18:09 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/28 01:55:01 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,14 @@ int main(int argc, char **argv)
     // Join monitor
     DEBUG("Waiting Here Until Monitor Join");
     pthread_join(gstate.mstate->monitor, NULL);
-    // Join threads ?
-    DEBUG("End of Program");
+    // Join threads
+    int k = 0;
+    while (k < gstate.pconfig->number_of_coders)
+    {
+        pthread_join(gstate.thd[k], NULL);
+        k++;
+    }
+    // Finished
+    DEBUG("End of Codexion Program");
     return (0);
 }
