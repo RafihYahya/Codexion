@@ -14,15 +14,18 @@ int init_scheduler(struct s_globalstate *gstate)
         ERROR("Malloc Fifo Scheduler Failed");
         return (-1);
     }
-    if (pthread_mutex_init(&(gstate->scheduler->sched_lock), NULL) < 0)
+    if (pthread_mutex_init(&(gstate->scheduler->sched_lock), NULL) != 0)
     {
         ERROR("Init schefuler Fifo Mutex Failed");
         return (-1);
     }
     DEBUG("Finished Scheduler Setup");
-    if (strcmp(gstate->pconfig->scheduler, "fifo"))
+    DEBUG("Scheduler string: [%s], len: %zu", 
+        gstate->pconfig->scheduler, 
+        strlen(gstate->pconfig->scheduler));
+    if (strcmp(gstate->pconfig->scheduler, "fifo") == 0)
         r_err = init_fifo_scheduler(gstate);
-    else if (strcmp(gstate->pconfig->scheduler, "edf"))
+    else if (strcmp(gstate->pconfig->scheduler, "edf") == 0)
         r_err = init_edf_scheduler(gstate);
     else 
     {

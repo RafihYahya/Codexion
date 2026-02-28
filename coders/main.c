@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/27 03:29:45 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/28 01:18:09 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     
     init_gstate(&gstate);
     gstate.pconfig = create_config(argc, argv);
-    DEBUG("ParsedConfig: ",pconfig);
+    DEBUG("Finished Parsing Configs");
     if (!gstate.pconfig){
         ERROR("Couldn't Parse Argv");    
         return (-1);
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
         ERROR("Failure Setting up Print Mutex Lock");
         return (free(gstate.states), free(gstate.pconfig), -1);
     }
-    // Init monitor thread
+    // Init Monitor thread
     DEBUG("Starting Monitor Thread");
     if (init_monitor_thread(&gstate) < 0)
     {
@@ -74,6 +74,7 @@ int main(int argc, char **argv)
         return (free(gstate.states), free(gstate.pconfig), free(gstate.mstate), -1); 
     }
     // Join monitor
+    DEBUG("Waiting Here Until Monitor Join");
     pthread_join(gstate.mstate->monitor, NULL);
     // Join threads ?
     DEBUG("End of Program");

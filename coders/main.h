@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 
 
@@ -47,9 +48,8 @@ struct s_scheduler {
 };
 
 enum CoderState {
-    STANDBY,
     COMPILE,
-    DEBUG,
+    DEBUGGING,
     REFACTOR,
     BURNOUT
 };
@@ -60,29 +60,18 @@ enum CoderState {
 // };
 
 struct s_ArgvParsedConfig {
-    const int number_of_coders;
-    const int time_to_burnout;
-    const int time_to_compile;
-    const int time_to_debug;
-    const int time_to_refactor;
-    const int number_of_compiles_required;
-    const int dongle_cooldown;
-    //struct s_cturn cturn;
-    const char scheduler[5];
+    int number_of_coders;
+    int time_to_burnout;
+    int time_to_compile;
+    int time_to_debug;
+    int time_to_refactor;
+    int number_of_compiles_required;
+    int dongle_cooldown;
+    char scheduler[5];
 };
 
-static const struct s_ArgvParsedConfig DEFAULT_CONFIG = {
-        .number_of_coders = 4,
-        .time_to_burnout = 480,
-        .time_to_compile = 30,
-        .time_to_debug = 45,
-        .time_to_refactor = 60,
-        .number_of_compiles_required = 10,
-        .dongle_cooldown = 5,
-        //.cturn.cturn = 0,
-        //.cturn.cturn_mutex = PTHREAD_MUTEX_INITIALIZER,
-        .scheduler = "fifo"
-        };
+extern struct s_ArgvParsedConfig DEFAULT_CONFIG;
+
 
 struct s_CoderArg {
     unsigned long time_awake;
@@ -111,7 +100,7 @@ struct s_UsbDongleState {
 #define COLOR_RED    "\033[31m"
 #define COLOR_RESET  "\033[0m"
 
-#ifdef DEBUG
+#ifdef DEBUG_MODE
 #define DEBUG(fmt, ...) \
     do { \
         fprintf(stderr, COLOR_YELLOW "[DEBUG] %s:%d:%s(): " fmt COLOR_RESET "\n", \

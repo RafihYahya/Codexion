@@ -2,7 +2,7 @@
 CC = gcc
 
 # Flags
-CFLAGS = -Wall -Wextra -Werror -pthread
+CFLAGS = -Wall -Wextra -pthread -fsanitize=address -g3 -DDEBUG_MODE -DTESTING
 
 # Output name
 NAME = codexion
@@ -14,7 +14,6 @@ SRC_DIR = coders
 SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/monitor.c \
        $(SRC_DIR)/mutex.c \
-       $(SRC_DIR)/old.c \
        $(SRC_DIR)/output_logger.c \
        $(SRC_DIR)/parser.c \
        $(SRC_DIR)/scheduler.c \

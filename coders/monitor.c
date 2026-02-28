@@ -5,6 +5,7 @@ void *monitor_thread(void *arg)
     struct s_globalstate *s_arg;
 
     s_arg = (struct s_globalstate *)arg;
+    DEBUG("Inside Monitor Thread");
     while(1)
     {
         pthread_mutex_lock(&(s_arg->mstate->death_lock));
@@ -16,6 +17,7 @@ void *monitor_thread(void *arg)
         pthread_mutex_unlock(&(s_arg->mstate->death_lock));
         // maybe sleep here a bit
     };
+    DEBUG("End of Monitor Thread");
 }
 
 int init_monitor_thread(struct s_globalstate *gstate)
@@ -24,9 +26,9 @@ int init_monitor_thread(struct s_globalstate *gstate)
     gstate->mstate = malloc(sizeof(struct s_monitorstate));
     if (!gstate->mstate)
         return (-1);
-    if (pthread_mutex_init(&(gstate->mstate->death_lock), NULL) < 0)
+    if (pthread_mutex_init(&(gstate->mstate->death_lock), NULL) != 0)
         return (free(gstate->mstate), -1);
-    if (pthread_create(gstate->mstate->monitor, NULL, NULL, NULL) < 0 )
+    if (pthread_create(&(gstate->mstate->monitor), NULL, monitor_thread, gstate) != 0 )
     {
         ERROR("Failed Creation of the Thread");
         return (free(gstate->mstate), -1);
