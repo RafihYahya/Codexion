@@ -22,7 +22,7 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv)
     if (!cfg)
         return (NULL);
 
-    #ifdef TESTING
+    #ifdef SKIP_PARSE
     *cfg = DEFAULT_CONFIG;
     #else
     if (argv_parser_validator(argc, argv, cfg) < 0)

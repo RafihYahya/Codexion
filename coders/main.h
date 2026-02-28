@@ -123,6 +123,11 @@ do { \
     exit(EXIT_FAILURE); \
 } while (0)
 
+#ifdef TESTING
+    #define RUN_TEST(code) do { code } while(0)
+#else
+    #define RUN_TEST(code) do {} while(0)
+#endif
 
 struct s_ArgvParsedConfig *create_config(int argc, char **argv);
 

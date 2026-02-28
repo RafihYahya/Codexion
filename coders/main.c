@@ -6,11 +6,41 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 17:32:51 by yrafih            #+#    #+#             */
-/*   Updated: 2026/02/28 01:55:01 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/02/28 02:39:00 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
+
+#define DUMP_GSTATE(g) DEBUG("\ngstate State:\n" \
+    "  pconfig->number_of_coders: %d\n" \
+    "  pconfig->time_to_burnout: %d\n" \
+    "  pconfig->time_to_compile: %d\n" \
+    "  pconfig->time_to_debug: %d\n" \
+    "  pconfig->time_to_refactor: %d\n" \
+    "  pconfig->number_of_compiles_required: %d\n" \
+    "  pconfig->dongle_cooldown: %d\n" \
+    "  pconfig->scheduler: %s\n" \
+    "  mstate->is_someone_dead: %d\n" \
+    "  mstate ptr: %p\n" \
+    "  cstates ptr: %p\n" \
+    "  states ptr: %p\n" \
+    "  thd ptr: %p\n" \
+    "  scheduler ptr: %p\n", \
+    (g).pconfig->number_of_coders, \
+    (g).pconfig->time_to_burnout, \
+    (g).pconfig->time_to_compile, \
+    (g).pconfig->time_to_debug, \
+    (g).pconfig->time_to_refactor, \
+    (g).pconfig->number_of_compiles_required, \
+    (g).pconfig->dongle_cooldown, \
+    (g).pconfig->scheduler, \
+    (g).mstate->is_someone_dead, \
+    (void *)(g).mstate, \
+    (void *)(g).cstates, \
+    (void *)(g).states, \
+    (void *)(g).thd, \
+    (void *)(g).scheduler)
 
 static void init_gstate(struct s_globalstate *gstate)
 {
@@ -22,6 +52,28 @@ static void init_gstate(struct s_globalstate *gstate)
     gstate->scheduler = NULL;
 
     return ;
+}
+
+void mem_cleanup(struct s_globalstate *gstate)
+{
+    int i = 0;
+
+    pthread_mutex_destroy(&gstate->print_lock);
+    if (gstate->mstate)
+    {
+        pthread_mutex_destroy(&gstate->mstate->death_lock);
+        free(gstate->mstate);
+    }
+    if (gstate->cstates)
+    {
+        while (i < gstate->pconfig->number_of_coders)
+            free(gstate->cstates[i++].arg);
+        free(gstate->cstates);
+    }
+    free(gstate->thd);
+    free(gstate->states);
+    free(gstate->pconfig);
+    free(gstate->scheduler);
 }
 
 int main(int argc, char **argv)
@@ -84,6 +136,8 @@ int main(int argc, char **argv)
         k++;
     }
     // Finished
+    DUMP_GSTATE(gstate);
     DEBUG("End of Codexion Program");
+    mem_cleanup(&gstate);
     return (0);
 }

@@ -11,8 +11,9 @@ void *monitor_thread(void *arg)
         pthread_mutex_lock(&(s_arg->mstate->death_lock));
         if (s_arg->mstate->is_someone_dead == 1)
         {
+            DEBUG("Someone Died, Time to Join Monitor");
             pthread_mutex_unlock(&(s_arg->mstate->death_lock));
-            return NULL;
+            return (NULL);
         }
         pthread_mutex_unlock(&(s_arg->mstate->death_lock));
         // maybe sleep here a bit

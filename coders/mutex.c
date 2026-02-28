@@ -18,7 +18,7 @@ int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes)
     DEBUG("Initiating Mutex");
     while (i < num_usb)
     {
-        // dont forget to init cond as well for cooldown timer
+        // Don't forget to init cond as well for cooldown timer
         if (pthread_mutex_init(&(*usb_mutexes)[i].usb_mutex, NULL) != 0)
         {
             ERROR("Couldn't Fully Init Mutexes");

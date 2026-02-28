@@ -2,7 +2,7 @@
 CC = gcc
 
 # Flags
-CFLAGS = -Wall -Wextra -pthread -fsanitize=address -g3 -DDEBUG_MODE -DTESTING
+CFLAGS = -Wall -Wextra -pthread -fsanitize=address -g3 -DDEBUG_MODE -DSKIP_PARSE -DTESTING
 
 # Output name
 NAME = codexion
