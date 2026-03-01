@@ -1,10 +1,12 @@
 #include "main.h"
 
-void print_lock(struct s_globalstate *gstate, char *msg)
+void print_lock(struct s_globalstate *gstate, const char *fmt, ...)
 {
-    pthread_mutex_lock(&(gstate->print_lock));
-    printf("%s", msg);
-    pthread_mutex_unlock(&(gstate->print_lock));
+    va_list args;
 
-    return ;
+    va_start(args, fmt);
+    pthread_mutex_lock(&gstate->print_lock);
+    vprintf(fmt, args);
+    pthread_mutex_unlock(&gstate->print_lock);
+    va_end(args);
 }

@@ -51,7 +51,6 @@ enum CoderState {
     COMPILE,
     DEBUGGING,
     REFACTOR,
-    BURNOUT
 };
 
 // struct s_cturn {
@@ -135,7 +134,7 @@ size_t get_curr_time_ms();
 
 struct s_ArgvParsedConfig *create_config(int argc, char **argv);
 
-void print_lock(struct s_globalstate *gstate, char *msg);
+void print_lock(struct s_globalstate *gstate, const char *fmt, ...);
 
 int init_monitor_thread(struct s_globalstate *gstate);
 int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes);
