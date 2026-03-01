@@ -23,7 +23,6 @@ void *coder_thread(void *arg)
     struct s_CoderState *s_arg;
 
     s_arg = (struct s_CoderState *)arg;
-
     DEBUG("Inside Coder Thread");
     while(1)
     {
