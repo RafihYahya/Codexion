@@ -16,6 +16,8 @@ struct s_ArgvParsedConfig DEFAULT_CONFIG = {
 
 struct s_ArgvParsedConfig *create_config(int argc, char **argv)
 {
+    (void)argc;
+    (void)argv;
     struct s_ArgvParsedConfig *cfg;
 
     cfg = malloc(sizeof(*cfg));
@@ -37,6 +39,9 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv)
 
 int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s)
 {
+    (void)argc;
+    (void)argv;
+    (void)s;
 	return 0;
 }
 

@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
-
+#include <sys/time.h>
 
 
 struct s_globalstate {
-    struct s_ArgvParsedConfig   *pconfig;
+    const struct s_ArgvParsedConfig   *pconfig;
     struct s_UsbDongleState     *states;
     struct s_CoderState         *cstates;
     struct s_monitorstate       *mstate;
@@ -60,13 +60,13 @@ enum CoderState {
 // };
 
 struct s_ArgvParsedConfig {
-    int number_of_coders;
-    int time_to_burnout;
-    int time_to_compile;
-    int time_to_debug;
-    int time_to_refactor;
-    int number_of_compiles_required;
-    int dongle_cooldown;
+    unsigned int number_of_coders;
+    unsigned int number_of_compiles_required;
+    size_t time_to_burnout;
+    size_t time_to_compile;
+    size_t time_to_debug;
+    size_t time_to_refactor;
+    size_t dongle_cooldown;
     char scheduler[5];
 };
 
@@ -74,8 +74,10 @@ extern struct s_ArgvParsedConfig DEFAULT_CONFIG;
 
 
 struct s_CoderArg {
-    unsigned long time_awake;
-    unsigned long compiled_count;
+    size_t last_time_comp;
+    size_t last_time_refact;
+    size_t last_time_debug;
+    unsigned int compiled_count;
 };
 
 struct s_CoderState {
@@ -92,7 +94,7 @@ struct s_UsbDongleState {
     pthread_mutex_t usb_mutex;
     pthread_cond_t usb_rec_cond;
     int is_available;
-    unsigned long recov_time;
+    size_t cdown_start;
 };
 
 /* ===== ANSI COLORS ===== */
@@ -128,6 +130,8 @@ do { \
 #else
     #define RUN_TEST(code) do {} while(0)
 #endif
+
+size_t get_curr_time_ms();
 
 struct s_ArgvParsedConfig *create_config(int argc, char **argv);
 

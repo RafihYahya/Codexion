@@ -14,7 +14,12 @@ void *coder_thread(void *arg)
         if (s_arg->mstate->is_someone_dead == 1)
         {
             pthread_mutex_unlock(&(s_arg->mstate->death_lock));
-            DEBUG("Someone Died, Time to Join Coder");
+            RUN_TEST(
+                if (s_arg->id == 0)
+                {
+                    DEBUG("Someone Died, Time to Join Coder %d", s_arg->id);
+                }
+            );
             return (NULL);
         }
         pthread_mutex_unlock(&(s_arg->mstate->death_lock));
@@ -27,7 +32,10 @@ void *coder_thread(void *arg)
 
         if (s_arg->state == COMPILE)
         {
-
+            if(get_curr_time_ms() - s_arg->arg->last_time_comp >= s_arg->gconfig->pconfig->time_to_compile)
+            {
+                s_arg->state = DEBUGGING;
+            }
         }
         else if (s_arg->state == DEBUGGING)
         {
@@ -52,7 +60,8 @@ void *coder_thread(void *arg)
 int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
     struct s_UsbDongleState **mutexes,  pthread_t **thd)
 {
-    int                i;
+    size_t                i;
+    size_t                j;
     struct s_CoderArg *carg;
 
     i = 0;
@@ -77,11 +86,15 @@ int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
         if (!carg)
         {
             ERROR("Failed Allocation");
-            int j = 0;
+            j = 0;
             while (j < i)
                 free((*cstates)[j++].arg);
             return (free(*thd), free(*cstates), -1);
         }
+        carg->compiled_count = 0;
+        carg->last_time_comp = 0;
+        carg->last_time_debug = 0;
+        carg->last_time_refact = 0;
         (*cstates)[i].id = i;
         (*cstates)[i].gconfig = arg;
         (*cstates)[i].state = COMPILE;
