@@ -130,6 +130,12 @@ do { \
     #define RUN_TEST(code) do {} while(0)
 #endif
 
+#define SAFE_PRINT(gstate, ...) do { \
+    pthread_mutex_lock(&(gstate)->print_lock); \
+    printf(__VA_ARGS__); \
+    pthread_mutex_unlock(&(gstate)->print_lock); \
+} while(0)
+
 size_t get_curr_time_ms();
 
 struct s_ArgvParsedConfig *create_config(int argc, char **argv);

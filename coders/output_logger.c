@@ -1,5 +1,6 @@
 #include "main.h"
 
+#include <stdarg.h>
 void print_lock(struct s_globalstate *gstate, const char *fmt, ...)
 {
     va_list args;

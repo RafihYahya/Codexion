@@ -38,7 +38,7 @@ void *coder_thread(void *arg)
                     return (NULL);
                 }
             );
-            print_lock(
+            SAFE_PRINT(
                 (struct s_globalstate *)s_arg->gconfig, "Coder %d Has Died \n", s_arg->id
             );
             return (NULL);
