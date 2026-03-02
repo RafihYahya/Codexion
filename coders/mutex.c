@@ -1,6 +1,7 @@
 #include "main.h"
 
-int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes)
+int init_usb_mutexes_conds(
+    int num_usb, struct s_UsbDongleState **usb_mutexes)
 {
     int i = 0;
 
@@ -18,8 +19,11 @@ int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes)
     DEBUG("Initiating Mutex");
     while (i < num_usb)
     {
-        // Don't forget to init cond as well for cooldown timer
-        if (pthread_mutex_init(&(*usb_mutexes)[i].usb_mutex, NULL) != 0)
+        if (
+            (pthread_mutex_init(&(*usb_mutexes)[i].usb_mutex, NULL) != 0)
+            || 
+            (pthread_cond_init(&(*usb_mutexes)[i].usb_rec_cond, NULL) != 0)
+            )
         {
             ERROR("Couldn't Fully Init Mutexes");
             free(*usb_mutexes);

@@ -44,6 +44,7 @@ void mem_cleanup(struct s_globalstate *gstate)
     free(gstate->thd);
     free(gstate->states);
     free((void *)gstate->pconfig);
+    free(gstate->scheduler->data);
     free(gstate->scheduler);
 }
 
@@ -106,7 +107,6 @@ int main(int argc, char **argv)
         pthread_join(gstate.thd[k], NULL);
         k++;
     }
-    // Finished
     DEBUG("End of Codexion Program");
     mem_cleanup(&gstate);
     return (0);

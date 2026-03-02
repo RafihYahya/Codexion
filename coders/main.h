@@ -44,6 +44,7 @@ struct s_scheduler {
     int (*pick_next)(struct s_scheduler*, int *out_id, long *out_deadline);
 
     pthread_mutex_t sched_lock;
+    pthread_cond_t sched_id;
     void *data;
 };
 
@@ -81,6 +82,7 @@ struct s_CoderArg {
 
 struct s_CoderState {
     unsigned int id;
+    unsigned int is_queued;
     enum CoderState state;
     struct s_UsbDongleState *l_usb;
     struct s_UsbDongleState *r_usb;
@@ -137,10 +139,12 @@ do { \
 } while(0)
 
 size_t get_curr_time_ms();
+size_t check_time(struct s_CoderState *s_arg);
 
 struct s_ArgvParsedConfig *create_config(int argc, char **argv);
 
 void print_lock(struct s_globalstate *gstate, const char *fmt, ...);
+void coder_thread_comp(struct s_CoderState *s_arg);
 
 int init_monitor_thread(struct s_globalstate *gstate);
 int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes);
@@ -148,6 +152,7 @@ int init_scheduler(struct s_globalstate *gstate);
 int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s);
 int init_fifo_scheduler(struct s_globalstate *gstate);
 int init_edf_scheduler(struct s_globalstate *gstate);
+int  coder_thread_refactor(struct s_CoderState *s_arg);
 int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
     struct s_UsbDongleState **mutexes,  pthread_t **thd);
 

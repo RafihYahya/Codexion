@@ -1,32 +1,12 @@
 #include "main.h"
+#include <pthread.h>
+#include <time.h>
 
 
-size_t check_time(struct s_CoderState *s_arg)
+
+static int check_death(struct s_CoderState *s_arg)
 {
-    size_t curr_time;
-
-    curr_time = get_curr_time_ms();
-    if (s_arg->state == COMPILE)
-        return (curr_time - s_arg->arg->last_time_comp >= 
-                (size_t)s_arg->gconfig->pconfig->time_to_compile);
-    if (s_arg->state == DEBUGGING)
-        return (curr_time - s_arg->arg->last_time_debug >= 
-                (size_t)s_arg->gconfig->pconfig->time_to_debug);
-    if (s_arg->state == REFACTOR)
-        return (curr_time - s_arg->arg->last_time_refact >= 
-                (size_t)s_arg->gconfig->pconfig->time_to_refactor);
-    return (0);
-}
-
-void *coder_thread(void *arg)
-{
-    struct s_CoderState *s_arg;
-
-    s_arg = (struct s_CoderState *)arg;
-    DEBUG("Inside Coder Thread");
-    while(1)
-    {
-        pthread_mutex_lock(&(s_arg->mstate->death_lock));
+    pthread_mutex_lock(&(s_arg->mstate->death_lock));
         if (s_arg->mstate->is_someone_dead == 1)
         {
             pthread_mutex_unlock(&(s_arg->mstate->death_lock));
@@ -40,11 +20,14 @@ void *coder_thread(void *arg)
             SAFE_PRINT(
                 (struct s_globalstate *)s_arg->gconfig, "Coder %d Has Died \n", s_arg->id
             );
-            return (NULL);
+            return (-1);
         }
-        pthread_mutex_unlock(&(s_arg->mstate->death_lock));
-        
-        // add to queue
+    pthread_mutex_unlock(&(s_arg->mstate->death_lock));
+    return (0);
+}
+
+static int check_burnout(struct s_CoderState *s_arg)
+{
         if (s_arg->state == COMPILE &&
             get_curr_time_ms() - s_arg->arg->last_time_comp >=
             (size_t)s_arg->gconfig->pconfig->time_to_burnout)
@@ -53,19 +36,25 @@ void *coder_thread(void *arg)
             pthread_mutex_lock(&(s_arg->mstate->death_lock));
             s_arg->mstate->is_someone_dead = 1;
             pthread_mutex_unlock(&(s_arg->mstate->death_lock));
+            return (-1);
+        }
+    return (0);
+}
+
+void *coder_thread(void *arg)
+{
+    struct s_CoderState *s_arg;
+
+    s_arg = (struct s_CoderState *)arg;
+    DEBUG("Inside Coder Thread");
+    while(1)
+    {
+        if (check_death(s_arg) != 0)
             return (NULL);
-        }
+        if (check_burnout(s_arg) != 0)
+            return (NULL);
         if (s_arg->state == COMPILE)
-        {
-            if (check_time(s_arg))
-            {
-                s_arg->state = DEBUGGING;
-                s_arg->arg->last_time_debug = get_curr_time_ms(); // start debug timer
-            }
-            // take_fork
-            // wait
-            // put fork and switch state to debug then fix time
-        }
+           coder_thread_comp(s_arg);
         else if (s_arg->state == DEBUGGING)
         {
             if (check_time(s_arg))
@@ -77,20 +66,8 @@ void *coder_thread(void *arg)
         }
         else if (s_arg->state == REFACTOR)
         {
-            if (check_time(s_arg))
-            {
-                s_arg->arg->compiled_count++;
-                if (s_arg->arg->compiled_count >= 
-                    s_arg->gconfig->pconfig->number_of_compiles_required)
-                {
-                    DEBUG("Finished Required Compiles Count");
-                    return (NULL);
-                }
-                s_arg->state = COMPILE;
-                s_arg->arg->last_time_comp = get_curr_time_ms();
-            }
-            usleep(s_arg->gconfig->pconfig->time_to_refactor);
-            // task finished , put in end of queue
+            if (coder_thread_refactor(s_arg) != 0)
+                return (NULL);
         }
         else
         {
@@ -144,6 +121,7 @@ int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
         carg->last_time_debug = 0;
         carg->last_time_refact = 0;
         (*cstates)[i].id = i;
+        (*cstates)[i].is_queued = 0;
         (*cstates)[i].gconfig = arg;
         (*cstates)[i].state = COMPILE;
         (*cstates)[i].mstate = arg->mstate;

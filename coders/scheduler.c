@@ -1,4 +1,5 @@
 #include "main.h"
+#include <pthread.h>
 
 
 int init_scheduler(struct s_globalstate *gstate)
@@ -17,6 +18,11 @@ int init_scheduler(struct s_globalstate *gstate)
     if (pthread_mutex_init(&(gstate->scheduler->sched_lock), NULL) != 0)
     {
         ERROR("Init schefuler Fifo Mutex Failed");
+        return (-1);
+    }
+    if (pthread_cond_init(&(gstate->scheduler->sched_id), NULL) != 0)
+    {
+        ERROR("Init schefuler Fifo Cond  Failed");
         return (-1);
     }
     DEBUG("Finished Scheduler Setup");

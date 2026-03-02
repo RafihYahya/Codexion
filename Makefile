@@ -19,7 +19,7 @@ SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/scheduler.c \
        $(SRC_DIR)/scheduler_edf.c \
        $(SRC_DIR)/scheduler_fifo.c \
-       $(SRC_DIR)/thread.c \
+       $(SRC_DIR)/thread2.c \
        $(SRC_DIR)/time.c
 
 # Object files (place .o files next to Makefile)
