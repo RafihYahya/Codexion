@@ -6,7 +6,7 @@
 /*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:20 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:21 by alone            ###   ########.fr       */
+/*   Updated: 2026/03/03 05:03:04 by alone            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,5 +15,6 @@
 
 int init_edf_scheduler(struct s_globalstate *gstate)
 {
+    (void)gstate;
     return (0);
 }

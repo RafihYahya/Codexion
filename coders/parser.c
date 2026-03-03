@@ -6,7 +6,7 @@
 /*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:23 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:24 by alone            ###   ########.fr       */
+/*   Updated: 2026/03/03 05:03:16 by alone            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,7 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv)
     if (argv_parser_validator(argc, argv, cfg) < 0)
         {
             ERROR("Parsing Error");
-            free(cfg);
-            return NULL;
+            return (free(cfg), NULL);
         }
     #endif
     return (cfg);
