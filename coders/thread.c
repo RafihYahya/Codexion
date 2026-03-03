@@ -17,9 +17,6 @@ static int check_death(struct s_CoderState *s_arg)
                     return (NULL);
                 }
             );
-            SAFE_PRINT(
-                (struct s_globalstate *)s_arg->gconfig, "Coder %d Has Died \n", s_arg->id
-            );
             return (-1);
         }
     pthread_mutex_unlock(&(s_arg->mstate->death_lock));
@@ -32,10 +29,13 @@ static int check_burnout(struct s_CoderState *s_arg)
             get_curr_time_ms() - s_arg->arg->last_time_comp >=
             (size_t)s_arg->gconfig->pconfig->time_to_burnout)
         {
-            DEBUG("Coder %zu burned out waiting for dongle", s_arg->id);
             pthread_mutex_lock(&(s_arg->mstate->death_lock));
             s_arg->mstate->is_someone_dead = 1;
             pthread_mutex_unlock(&(s_arg->mstate->death_lock));
+            SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+                "%zu %u burned out\n",
+                get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+                s_arg->id + 1);
             return (-1);
         }
     return (0);
@@ -61,8 +61,13 @@ void *coder_thread(void *arg)
             {
                 s_arg->state = REFACTOR;
                 s_arg->arg->last_time_refact = get_curr_time_ms();
+                SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+                    "%zu %u is refactoring\n",
+                    get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+                    s_arg->id + 1);
+                continue ;
             }
-            usleep(s_arg->gconfig->pconfig->time_to_debug);
+            usleep(s_arg->gconfig->pconfig->time_to_debug * 1000);
         }
         else if (s_arg->state == REFACTOR)
         {
@@ -117,9 +122,9 @@ int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
             return (free(*thd), free(*cstates), -1);
         }
         carg->last_time_comp  = get_curr_time_ms();
-        carg->last_time_comp = 0;
         carg->last_time_debug = 0;
         carg->last_time_refact = 0;
+        carg->compiled_count = 0;
         (*cstates)[i].id = i;
         (*cstates)[i].is_queued = 0;
         (*cstates)[i].gconfig = arg;

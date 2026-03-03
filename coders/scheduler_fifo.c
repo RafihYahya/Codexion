@@ -80,6 +80,8 @@ int init_fifo_scheduler(struct s_globalstate *gstate)
     fifo_q->count = 0;
     gstate->scheduler->add_task = add_task ;
     gstate->scheduler->task_finished = task_finished;
+    gstate->scheduler->remove_task = NULL;
+    gstate->scheduler->pick_next = NULL;
 
     return (0);
 }

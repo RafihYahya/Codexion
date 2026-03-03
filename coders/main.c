@@ -12,7 +12,6 @@
 
 #include "main.h"
 
-
 static void init_gstate(struct s_globalstate *gstate)
 {
     gstate->cstates = NULL;
@@ -21,31 +20,9 @@ static void init_gstate(struct s_globalstate *gstate)
     gstate->thd = NULL;
     gstate->states = NULL;
     gstate->scheduler = NULL;
+    gstate->start_time_ms = 0;
 
     return ;
-}
-
-void mem_cleanup(struct s_globalstate *gstate)
-{
-    size_t i = 0;
-
-    pthread_mutex_destroy(&gstate->print_lock);
-    if (gstate->mstate)
-    {
-        pthread_mutex_destroy(&gstate->mstate->death_lock);
-        free(gstate->mstate);
-    }
-    if (gstate->cstates)
-    {
-        while (i < gstate->pconfig->number_of_coders)
-            free(gstate->cstates[i++].arg);
-        free(gstate->cstates);
-    }
-    free(gstate->thd);
-    free(gstate->states);
-    free((void *)gstate->pconfig);
-    free(gstate->scheduler->data);
-    free(gstate->scheduler);
 }
 
 int main(int argc, char **argv)
@@ -77,11 +54,12 @@ int main(int argc, char **argv)
     }
     DEBUG("Finished Setting Scheduler");
     // Setup print_mutex
-    if (pthread_mutex_init(&(gstate.print_lock), NULL) < 0)
+    if (pthread_mutex_init(&(gstate.print_lock), NULL) != 0)
     {
         ERROR("Failure Setting up Print Mutex Lock");
         return (free(gstate.states), free((void *)gstate.pconfig), -1);
     }
+    gstate.start_time_ms = get_curr_time_ms();
     // Init Monitor thread
     DEBUG("Starting Monitor Thread");
     if (init_monitor_thread(&gstate) < 0)

@@ -7,10 +7,8 @@ struct s_ArgvParsedConfig DEFAULT_CONFIG = {
         .time_to_compile = 200,
         .time_to_debug = 200,
         .time_to_refactor = 200,
-        .number_of_compiles_required = 3,
+        .number_of_compiles_required = 15,
         .dongle_cooldown = 50,
-        //.cturn.cturn = 0,
-        //.cturn.cturn_mutex = PTHREAD_MUTEX_INITIALIZER,
         .scheduler = "fifo"
         };
 

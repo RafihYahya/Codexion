@@ -60,6 +60,10 @@ static int take_usb(struct s_CoderState *s_arg, int direc)
             if (usb->cdown_start == 0 || now_ms >= ready_ms)
             {
                 usb->is_available = 0;
+                SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+                    "%zu %u has taken a dongle\n",
+                    get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+                    s_arg->id + 1);
                 break ;
             }
             wait_ms = ready_ms - now_ms;
@@ -130,10 +134,18 @@ void coder_thread_comp(struct s_CoderState *s_arg)
         put_usb(s_arg, 0);
         return ;
     }
+    SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+        "%zu %u is compiling\n",
+        get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+        s_arg->id + 1);
 
     usleep(s_arg->gconfig->pconfig->time_to_compile * 1000);
     s_arg->state = DEBUGGING;
     s_arg->arg->last_time_debug = get_curr_time_ms();
+    SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+        "%zu %u is debugging\n",
+        get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+        s_arg->id + 1);
 
     if (put_usb(s_arg, 1) != 0)
         return ;
@@ -154,12 +166,15 @@ int  coder_thread_refactor(struct s_CoderState *s_arg)
                 if (s_arg->arg->compiled_count >= 
                     s_arg->gconfig->pconfig->number_of_compiles_required)
                 {
+                    pthread_mutex_lock(&(s_arg->mstate->death_lock));
+                    s_arg->mstate->finished_coders++;
+                    pthread_mutex_unlock(&(s_arg->mstate->death_lock));
                     DEBUG("Finished Required Compiles Count");
                     return (-1);
                 }
                 s_arg->state = COMPILE;
                 s_arg->arg->last_time_comp = get_curr_time_ms();
             }
-            usleep(s_arg->gconfig->pconfig->time_to_refactor);
+            usleep(s_arg->gconfig->pconfig->time_to_refactor * 1000);
     return (0);
 }

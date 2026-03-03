@@ -15,8 +15,13 @@ void *monitor_thread(void *arg)
             pthread_mutex_unlock(&(s_arg->mstate->death_lock));
             return (NULL);
         }
+        if (s_arg->mstate->finished_coders >= s_arg->pconfig->number_of_coders)
+        {
+            pthread_mutex_unlock(&(s_arg->mstate->death_lock));
+            return (NULL);
+        }
         pthread_mutex_unlock(&(s_arg->mstate->death_lock));
-        // maybe sleep here a bit
+        usleep(5000);
     };
     DEBUG("End of Monitor Thread");
 }
@@ -30,6 +35,7 @@ int init_monitor_thread(struct s_globalstate *gstate)
     if (pthread_mutex_init(&(gstate->mstate->death_lock), NULL) != 0)
         return (free(gstate->mstate), -1);
     gstate->mstate->is_someone_dead = 0;
+    gstate->mstate->finished_coders = 0;
     if (pthread_create(&(gstate->mstate->monitor), NULL, monitor_thread, gstate) != 0 )
     {
         ERROR("Failed Creation of the Thread");

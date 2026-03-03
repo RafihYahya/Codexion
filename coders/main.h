@@ -15,6 +15,7 @@ struct s_globalstate {
     struct s_CoderState         *cstates;
     struct s_monitorstate       *mstate;
     struct s_scheduler          *scheduler;
+    size_t                      start_time_ms;
     pthread_mutex_t              print_lock;
     pthread_t                   *thd;
 };
@@ -33,6 +34,7 @@ struct s_fifo_queue
 
 struct s_monitorstate {
     int is_someone_dead;
+    unsigned int finished_coders;
     pthread_t monitor;
     pthread_mutex_t death_lock;
 };
@@ -145,6 +147,7 @@ struct s_ArgvParsedConfig *create_config(int argc, char **argv);
 
 void print_lock(struct s_globalstate *gstate, const char *fmt, ...);
 void coder_thread_comp(struct s_CoderState *s_arg);
+void mem_cleanup(struct s_globalstate *gstate);
 
 int init_monitor_thread(struct s_globalstate *gstate);
 int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes);
