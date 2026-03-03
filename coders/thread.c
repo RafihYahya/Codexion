@@ -6,7 +6,7 @@
 /*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:08 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:12 by alone            ###   ########.fr       */
+/*   Updated: 2026/03/03 04:40:12 by alone            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ static int check_death(struct s_CoderState *s_arg)
                 if (s_arg->id == 0)
                 {
                     DEBUG("Someone Died, Time to Join Coder %d", s_arg->id);
-                    return (NULL);
+                    return (-1);
                 }
             );
             return (-1);
@@ -63,92 +63,13 @@ void *coder_thread(void *arg)
         if (check_burnout(s_arg) != 0)
             return (NULL);
         if (s_arg->state == COMPILE)
-           coder_thread_comp(s_arg);
-        else if (s_arg->state == DEBUGGING)
-        {
-            if (check_time(s_arg))
-            {
-                s_arg->state = REFACTOR;
-                s_arg->arg->last_time_refact = get_curr_time_ms();
-                SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
-                    "%zu %u is refactoring\n",
-                    get_curr_time_ms() - s_arg->gconfig->start_time_ms,
-                    s_arg->id + 1);
-                continue ;
-            }
-            usleep(s_arg->gconfig->pconfig->time_to_debug * 1000);
-        }
-        else if (s_arg->state == REFACTOR)
-        {
-            if (coder_thread_refactor(s_arg) != 0)
-                return (NULL);
-        }
-        else
-        {
-            ERROR("Should be Unreachable");
+            coder_thread_comp(s_arg);
+        else if (s_arg->state == DEBUGGING && coder_thread_debug(s_arg) == 1)
+            continue;
+        else if (s_arg->state == REFACTOR && coder_thread_refactor(s_arg) != 0)
             return (NULL);
-        }
-        // maybe sleep a bit
         usleep(1000);
     };
     DEBUG("End of Coder Thread");
     return (NULL);
-}
-
-
-int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
-    struct s_UsbDongleState **mutexes,  pthread_t **thd)
-{
-    size_t                i;
-    size_t                j;
-    struct s_CoderArg *carg;
-
-    i = 0;
-    carg = NULL;
-    DEBUG("Creation of Coder Threads along with their corresponding states");
-    if (!arg || !cstates || !thd || !mutexes)
-    {
-        ERROR("Arguments Invalid/Null");
-        return (-1);
-    }
-    DEBUG("Setting up states and thread allocations");
-    *cstates = malloc(sizeof(struct s_CoderState) * arg->pconfig->number_of_coders);
-    *thd = malloc(sizeof(pthread_t) * arg->pconfig->number_of_coders);
-    if (!*thd || !*cstates)
-    {
-        ERROR("Failed Allocation");
-        return (-1);
-    }
-    while (i < (size_t)arg->pconfig->number_of_coders)
-    {
-        carg = malloc(sizeof(struct s_CoderArg));
-        if (!carg)
-        {
-            ERROR("Failed Allocation");
-            j = 0;
-            while (j < i)
-                free((*cstates)[j++].arg);
-            return (free(*thd), free(*cstates), -1);
-        }
-        carg->last_time_comp  = get_curr_time_ms();
-        carg->last_time_debug = 0;
-        carg->last_time_refact = 0;
-        carg->compiled_count = 0;
-        (*cstates)[i].id = i;
-        (*cstates)[i].is_queued = 0;
-        (*cstates)[i].gconfig = arg;
-        (*cstates)[i].state = COMPILE;
-        (*cstates)[i].mstate = arg->mstate;
-        (*cstates)[i].l_usb = &(*mutexes)[i % arg->pconfig->number_of_coders];
-        (*cstates)[i].r_usb = &(*mutexes)[(i + 1) % arg->pconfig->number_of_coders]; // not sure if this is correct
-        (*cstates)[i].arg = carg;
-        if (pthread_create(&(*thd)[i], NULL, coder_thread, &(*cstates)[i]) != 0)
-        {
-            ERROR("Failed creation of threads");
-            return (free(*thd), free(*cstates), -1);
-        }
-        i++;
-    }
-    DEBUG("End of Thread Init function");
-    return (0);
 }

@@ -6,26 +6,11 @@
 /*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:04 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:05 by alone            ###   ########.fr       */
+/*   Updated: 2026/03/03 04:52:01 by alone            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
-
-
-static int get_abs_timeout_from_now_ms(size_t wait_ms, struct timespec *ts)
-{
-    struct timeval tv;
-    size_t         usec_total;
-
-    if (gettimeofday(&tv, NULL) != 0)
-        return (-1);
-    ts->tv_sec = tv.tv_sec + (time_t)(wait_ms / 1000);
-    usec_total = (size_t)tv.tv_usec + (wait_ms % 1000) * 1000;
-    ts->tv_sec += (time_t)(usec_total / 1000000);
-    ts->tv_nsec = (long)((usec_total % 1000000) * 1000);
-    return (0);
-}
 
 
 static int wait_for_my_turn(struct s_scheduler *sch, int my_id)
@@ -51,77 +36,33 @@ static int wait_for_my_turn(struct s_scheduler *sch, int my_id)
     return (0);
 }
 
-static int take_usb(struct s_CoderState *s_arg, int direc)
+static int run_compile_round(struct s_CoderState *s_arg, struct s_scheduler *sch)
 {
-    struct s_UsbDongleState *usb;
-    size_t                  now_ms;
-    size_t                  ready_ms;
-    size_t                  wait_ms;
-    struct timespec         ts;
-
-    usb = (direc == 0) ? s_arg->l_usb : s_arg->r_usb;
-    if (pthread_mutex_lock(&usb->usb_mutex) != 0)
+    if (take_usb(s_arg, 0) != 0)
         return (-1);
-    while (1)
-    {
-        now_ms = get_curr_time_ms();
-        if (usb->is_available == 1)
-        {
-            ready_ms = usb->cdown_start + s_arg->gconfig->pconfig->dongle_cooldown;
-            if (usb->cdown_start == 0 || now_ms >= ready_ms)
-            {
-                usb->is_available = 0;
-                SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
-                    "%zu %u has taken a dongle\n",
-                    get_curr_time_ms() - s_arg->gconfig->start_time_ms,
-                    s_arg->id + 1);
-                break ;
-            }
-            wait_ms = ready_ms - now_ms;
-            if (get_abs_timeout_from_now_ms(wait_ms, &ts) != 0)
-            {
-                pthread_mutex_unlock(&usb->usb_mutex);
-                return (-1);
-            }
-            if (pthread_cond_timedwait(&usb->usb_rec_cond, &usb->usb_mutex, &ts) != 0)
-            {
-                now_ms = get_curr_time_ms();
-                if (now_ms < ready_ms)
-                {
-                    pthread_mutex_unlock(&usb->usb_mutex);
-                    return (-1);
-                }
-            }
-        }
-        else if (pthread_cond_wait(&usb->usb_rec_cond, &usb->usb_mutex) != 0)
-        {
-            pthread_mutex_unlock(&usb->usb_mutex);
-            return (-1);
-        }
-    }
-    if (pthread_mutex_unlock(&usb->usb_mutex) != 0)
+    if (take_usb(s_arg, 1) != 0)
+        return (put_usb(s_arg, 0), -1);
+    SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+        "%zu %u is compiling\n",
+        get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+        s_arg->id + 1);
+    usleep(s_arg->gconfig->pconfig->time_to_compile * 1000);
+    s_arg->state = DEBUGGING;
+    s_arg->arg->last_time_debug = get_curr_time_ms();
+    SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+        "%zu %u is debugging\n",
+        get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+        s_arg->id + 1);
+    if (put_usb(s_arg, 1) != 0 || put_usb(s_arg, 0) != 0)
+        return (-1);
+    sch->task_finished(sch, s_arg->id);
+    s_arg->is_queued = 0;
+    if (pthread_cond_broadcast(&sch->sched_id) != 0)
         return (-1);
     return (0);
 }
 
-static int put_usb(struct s_CoderState *s_arg, int direc)
-{
-    struct s_UsbDongleState *usb;
 
-    usb = (direc == 0) ? s_arg->l_usb : s_arg->r_usb;
-    if (pthread_mutex_lock(&usb->usb_mutex) != 0)
-        return (-1);
-    usb->is_available = 1;
-    usb->cdown_start = get_curr_time_ms();
-    if (pthread_cond_broadcast(&usb->usb_rec_cond) != 0)
-    {
-        pthread_mutex_unlock(&usb->usb_mutex);
-        return (-1);
-    }
-    if (pthread_mutex_unlock(&usb->usb_mutex) != 0)
-        return (-1);
-    return (0);
-}
 
 void coder_thread_comp(struct s_CoderState *s_arg)
 {
@@ -137,36 +78,24 @@ void coder_thread_comp(struct s_CoderState *s_arg)
     }
     if (wait_for_my_turn(s_arg->gconfig->scheduler, s_arg->id) != 0)
         return ;
+    if (run_compile_round(s_arg, sch) != 0)
+        return ;
+}
 
-    if (take_usb(s_arg, 0) != 0)
-        return ;
-    if (take_usb(s_arg, 1) != 0)
-    {
-        put_usb(s_arg, 0);
-        return ;
-    }
-    SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
-        "%zu %u is compiling\n",
-        get_curr_time_ms() - s_arg->gconfig->start_time_ms,
-        s_arg->id + 1);
-
-    usleep(s_arg->gconfig->pconfig->time_to_compile * 1000);
-    s_arg->state = DEBUGGING;
-    s_arg->arg->last_time_debug = get_curr_time_ms();
-    SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
-        "%zu %u is debugging\n",
-        get_curr_time_ms() - s_arg->gconfig->start_time_ms,
-        s_arg->id + 1);
-
-    if (put_usb(s_arg, 1) != 0)
-        return ;
-    if (put_usb(s_arg, 0) != 0)
-        return ;
-
-    sch->task_finished(sch, s_arg->id);
-    s_arg->is_queued = 0;
-    if (pthread_cond_broadcast(&sch->sched_id) != 0)
-        return ;
+int  coder_thread_debug(struct s_CoderState *s_arg)
+{
+    if (check_time(s_arg))
+        {
+            s_arg->state = REFACTOR;
+            s_arg->arg->last_time_refact = get_curr_time_ms();
+            SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+                "%zu %u is refactoring\n",
+                get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+                s_arg->id + 1);
+            return (1);
+        }
+        usleep(s_arg->gconfig->pconfig->time_to_debug * 1000);
+    return (0);
 }
 
 int  coder_thread_refactor(struct s_CoderState *s_arg)

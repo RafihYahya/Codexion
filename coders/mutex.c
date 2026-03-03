@@ -6,7 +6,7 @@
 /*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:25 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:26 by alone            ###   ########.fr       */
+/*   Updated: 2026/03/03 04:54:49 by alone            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,9 @@
 int init_usb_mutexes_conds(
     int num_usb, struct s_UsbDongleState **usb_mutexes)
 {
-    int i = 0;
+    int i;
 
+    i = 0;
     if (!usb_mutexes)
     {
         ERROR("Must Not be Null ");
@@ -38,8 +39,7 @@ int init_usb_mutexes_conds(
             )
         {
             ERROR("Couldn't Fully Init Mutexes");
-            free(*usb_mutexes);
-            return (-1);
+            return (free(*usb_mutexes), -1);
         }
         (*usb_mutexes)[i].cdown_start = 0;
         (*usb_mutexes)[i].is_available = 1;

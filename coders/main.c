@@ -6,7 +6,7 @@
 /*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:37 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:38 by alone            ###   ########.fr       */
+/*   Updated: 2026/03/03 04:17:15 by alone            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     DEBUG("Finished Setting Monitor Thread");
     // Init coder thread
     DEBUG("Starting Threads");
-    if (init_coder_threads(&gstate, &(gstate.cstates), &(gstate.states), &(gstate.thd)) < 0)
+    if (init_coder_threads(&gstate) < 0)
     {
         ERROR("Failed Init of Mutexes");
         return (free(gstate.states), free((void *)gstate.pconfig), free(gstate.mstate), -1); 

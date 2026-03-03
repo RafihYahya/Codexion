@@ -12,6 +12,35 @@
 
 #include "main.h"
 
+static void remove_node(struct s_fifo_queue *fifo_q,
+    struct s_node *prev, struct s_node *curr)
+{
+    if (prev)
+        prev->next = curr->next;
+    else
+        fifo_q->front = curr->next;
+    if (fifo_q->back == curr)
+        fifo_q->back = prev;
+    if (fifo_q->count > 0)
+        fifo_q->count--;
+    free(curr);
+}
+
+static void push_back_node(struct s_fifo_queue *fifo_q, struct s_node *new_node)
+{
+    if (!fifo_q->front)
+    {
+        fifo_q->front = new_node;
+        fifo_q->back = new_node;
+    }
+    else
+    {
+        fifo_q->back->next = new_node;
+        fifo_q->back = new_node;
+    }
+    fifo_q->count++;
+}
+
 static void task_finished(struct s_scheduler *sch, int id)
 {
     struct s_fifo_queue *fifo_q;
@@ -28,15 +57,7 @@ static void task_finished(struct s_scheduler *sch, int id)
     {
         if (curr->curr_id == id)
         {
-            if (prev)
-                prev->next = curr->next;
-            else
-                fifo_q->front = curr->next;
-            if (fifo_q->back == curr)
-                fifo_q->back = prev;
-            if (fifo_q->count > 0)
-                fifo_q->count--;
-            free(curr);
+            remove_node(fifo_q, prev, curr);
             pthread_mutex_unlock(&sch->sched_lock);
             return ;
         }
@@ -61,17 +82,7 @@ int add_task(struct s_scheduler *sch, int id, long deadline)
     new_node->next = NULL;
     pthread_mutex_lock(&sch->sched_lock);
     fifo_q = (struct s_fifo_queue *)sch->data;
-    if (!fifo_q->front)
-    {
-        fifo_q->front = new_node;
-        fifo_q->back = new_node;
-    }
-    else
-    {
-        fifo_q->back->next = new_node;
-        fifo_q->back = new_node;
-    }
-    fifo_q->count++;
+    push_back_node(fifo_q, new_node);
     pthread_mutex_unlock(&sch->sched_lock);
     return (0);
 }

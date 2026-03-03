@@ -6,7 +6,7 @@
 /*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:31 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:32 by alone            ###   ########.fr       */
+/*   Updated: 2026/03/03 04:42:35 by alone            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,12 +154,14 @@ do { \
 
 size_t get_curr_time_ms();
 size_t check_time(struct s_CoderState *s_arg);
+size_t get_abs_timeout_from_now_ms(size_t wait_ms, struct timespec *ts);
 
 struct s_ArgvParsedConfig *create_config(int argc, char **argv);
 
 void print_lock(struct s_globalstate *gstate, const char *fmt, ...);
 void coder_thread_comp(struct s_CoderState *s_arg);
 void mem_cleanup(struct s_globalstate *gstate);
+void *coder_thread(void *arg);
 
 int init_monitor_thread(struct s_globalstate *gstate);
 int init_usb_mutexes_conds(int num_usb, struct s_UsbDongleState **usb_mutexes);
@@ -168,8 +170,10 @@ int argv_parser_validator(int argc, char **argv, struct s_ArgvParsedConfig *s);
 int init_fifo_scheduler(struct s_globalstate *gstate);
 int init_edf_scheduler(struct s_globalstate *gstate);
 int  coder_thread_refactor(struct s_CoderState *s_arg);
-int init_coder_threads(struct s_globalstate *arg, struct s_CoderState **cstates,
-    struct s_UsbDongleState **mutexes,  pthread_t **thd);
+int init_coder_threads(struct s_globalstate *gstate);
+int  coder_thread_debug(struct s_CoderState *s_arg);
+int take_usb(struct s_CoderState *s_arg, int direc);
+int put_usb(struct s_CoderState *s_arg, int direc);
 
 
 #endif
