@@ -3,17 +3,32 @@
 /*                                                        :::      ::::::::   */
 /*   thread2.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
+/*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:04 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 04:52:01 by alone            ###   ########.fr       */
+/*   Updated: 2026/04/01 15:38:23 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
 
 
-static int wait_for_my_turn(struct s_scheduler *sch, int my_id)
+static int safe_sleep(struct s_CoderState *s_arg, size_t ms)
+{
+    size_t elapsed;
+
+    elapsed = 0;
+    while (elapsed < ms)
+    {
+        if (check_death(s_arg) != 0)
+            return (-1);
+        usleep(1000);
+        elapsed++;
+    }
+    return (0);
+}
+
+static int wait_for_my_turn(struct s_scheduler *sch, int my_id, struct s_CoderState *s_arg)
 {
     struct s_fifo_queue *q;
 
@@ -25,6 +40,11 @@ static int wait_for_my_turn(struct s_scheduler *sch, int my_id)
 
     while (!q->front || q->front->curr_id != my_id)
     {
+        if (check_death(s_arg) != 0)  // ← check death while waiting
+        {
+            pthread_mutex_unlock(&sch->sched_lock);
+            return (-1);
+        }
         if (pthread_cond_wait(&sch->sched_id, &sch->sched_lock) != 0)
         {
             pthread_mutex_unlock(&sch->sched_lock);
@@ -42,11 +62,13 @@ static int run_compile_round(struct s_CoderState *s_arg, struct s_scheduler *sch
         return (-1);
     if (take_usb(s_arg, 1) != 0)
         return (put_usb(s_arg, 0), -1);
+    s_arg->arg->last_time_comp = get_curr_time_ms();
     SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
         "%zu %u is compiling\n",
         get_curr_time_ms() - s_arg->gconfig->start_time_ms,
         s_arg->id + 1);
-    usleep(s_arg->gconfig->pconfig->time_to_compile * 1000);
+    if (safe_sleep(s_arg, s_arg->gconfig->pconfig->time_to_compile) != 0) // ← no more raw usleep
+        return (-1);
     s_arg->state = DEBUGGING;
     s_arg->arg->last_time_debug = get_curr_time_ms();
     SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
@@ -76,8 +98,12 @@ void coder_thread_comp(struct s_CoderState *s_arg)
         else
             return ;
     }
-    if (wait_for_my_turn(s_arg->gconfig->scheduler, s_arg->id) != 0)
+    if (wait_for_my_turn(s_arg->gconfig->scheduler, s_arg->id, s_arg) != 0)
+    {
+        sch->task_finished(sch, s_arg->id); // ← free the node before exiting
+        s_arg->is_queued = 0;
         return ;
+    }
     if (run_compile_round(s_arg, sch) != 0)
         return ;
 }
@@ -94,7 +120,8 @@ int  coder_thread_debug(struct s_CoderState *s_arg)
                 s_arg->id + 1);
             return (1);
         }
-        usleep(s_arg->gconfig->pconfig->time_to_debug * 1000);
+        if (safe_sleep(s_arg, s_arg->gconfig->pconfig->time_to_debug) != 0)
+            return (-1);
     return (0);
 }
 
@@ -113,8 +140,8 @@ int  coder_thread_refactor(struct s_CoderState *s_arg)
                     return (-1);
                 }
                 s_arg->state = COMPILE;
-                s_arg->arg->last_time_comp = get_curr_time_ms();
             }
-            usleep(s_arg->gconfig->pconfig->time_to_refactor * 1000);
+            if (safe_sleep(s_arg, s_arg->gconfig->pconfig->time_to_refactor) != 0)
+                return (-1);
     return (0);
 }

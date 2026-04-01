@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
+/*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:31 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 04:42:35 by alone            ###   ########.fr       */
+/*   Updated: 2026/04/01 15:29:21 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,7 @@ int init_coder_threads(struct s_globalstate *gstate);
 int  coder_thread_debug(struct s_CoderState *s_arg);
 int take_usb(struct s_CoderState *s_arg, int direc);
 int put_usb(struct s_CoderState *s_arg, int direc);
+int check_death(struct s_CoderState *s_arg);
 
 
 #endif

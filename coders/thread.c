@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   thread.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
+/*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:08 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 04:40:12 by alone            ###   ########.fr       */
+/*   Updated: 2026/04/01 15:32:08 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
 
 
-static int check_death(struct s_CoderState *s_arg)
+int check_death(struct s_CoderState *s_arg)
 {
     pthread_mutex_lock(&(s_arg->mstate->death_lock));
         if (s_arg->mstate->is_someone_dead == 1)
@@ -34,19 +34,22 @@ static int check_death(struct s_CoderState *s_arg)
 
 static int check_burnout(struct s_CoderState *s_arg)
 {
-        if (s_arg->state == COMPILE &&
-            get_curr_time_ms() - s_arg->arg->last_time_comp >=
-            (size_t)s_arg->gconfig->pconfig->time_to_burnout)
-        {
-            pthread_mutex_lock(&(s_arg->mstate->death_lock));
-            s_arg->mstate->is_someone_dead = 1;
-            pthread_mutex_unlock(&(s_arg->mstate->death_lock));
-            SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
-                "%zu %u burned out\n",
-                get_curr_time_ms() - s_arg->gconfig->start_time_ms,
-                s_arg->id + 1);
-            return (-1);
-        }
+    struct s_scheduler *sch;
+
+    sch = (struct s_scheduler *)s_arg->gconfig->scheduler;
+    if (get_curr_time_ms() - s_arg->arg->last_time_comp >=
+        (size_t)s_arg->gconfig->pconfig->time_to_burnout)
+    {
+        pthread_mutex_lock(&(s_arg->mstate->death_lock));
+        s_arg->mstate->is_someone_dead = 1;
+        pthread_mutex_unlock(&(s_arg->mstate->death_lock));
+        pthread_cond_broadcast(&sch->sched_id); // ← here, wakes all waiting threads
+        SAFE_PRINT((struct s_globalstate *)s_arg->gconfig,
+            "%zu %u burned out\n",
+            get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+            s_arg->id + 1);
+        return (-1);
+    }
     return (0);
 }
 
