@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:04 by alone             #+#    #+#             */
-/*   Updated: 2026/04/01 15:38:23 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/04/05 14:23:16 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ static int wait_for_my_turn(struct s_scheduler *sch, int my_id, struct s_CoderSt
 
     while (!q->front || q->front->curr_id != my_id)
     {
-        if (check_death(s_arg) != 0)  // ← check death while waiting
+        if (check_death(s_arg) != 0)  // check death while waiting
         {
             pthread_mutex_unlock(&sch->sched_lock);
             return (-1);
@@ -67,7 +67,7 @@ static int run_compile_round(struct s_CoderState *s_arg, struct s_scheduler *sch
         "%zu %u is compiling\n",
         get_curr_time_ms() - s_arg->gconfig->start_time_ms,
         s_arg->id + 1);
-    if (safe_sleep(s_arg, s_arg->gconfig->pconfig->time_to_compile) != 0) // ← no more raw usleep
+    if (safe_sleep(s_arg, s_arg->gconfig->pconfig->time_to_compile) != 0)
         return (-1);
     s_arg->state = DEBUGGING;
     s_arg->arg->last_time_debug = get_curr_time_ms();
@@ -100,7 +100,7 @@ void coder_thread_comp(struct s_CoderState *s_arg)
     }
     if (wait_for_my_turn(s_arg->gconfig->scheduler, s_arg->id, s_arg) != 0)
     {
-        sch->task_finished(sch, s_arg->id); // ← free the node before exiting
+        sch->task_finished(sch, s_arg->id); //free the node before exiting
         s_arg->is_queued = 0;
         return ;
     }

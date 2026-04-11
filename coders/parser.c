@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:23 by alone             #+#    #+#             */
-/*   Updated: 2026/04/01 15:26:21 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/04/01 16:06:04 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,13 @@
 
 
 struct s_ArgvParsedConfig DEFAULT_CONFIG = {
-        .number_of_coders = 4,
-        .time_to_burnout = 800,
-        .time_to_compile = 2000,
-        .time_to_debug = 200,
-        .time_to_refactor = 200,
+        .number_of_coders = 1,
+        .time_to_burnout = 100,
+        .time_to_compile = 20,
+        .time_to_debug = 30,
+        .time_to_refactor = 10,
         .number_of_compiles_required = 15,
-        .dongle_cooldown = 500,
+        .dongle_cooldown = 10,
         .scheduler = "fifo"
         };
 

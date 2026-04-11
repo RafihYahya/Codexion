@@ -6,7 +6,7 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 03:54:40 by alone             #+#    #+#             */
-/*   Updated: 2026/04/01 15:41:44 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/04/05 14:22:58 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ static void cleanup_scheduler(struct s_scheduler *scheduler)
     {
         fifo_q = (struct s_fifo_queue *)scheduler->data;
         curr = fifo_q->front;
-        while (curr)           // ← free all remaining nodes first
+        while (curr)           //free all remaining nodes first
         {
             next = curr->next;
             free(curr);
