@@ -86,7 +86,19 @@ int add_task(struct s_scheduler *sch, int id, long deadline)
     pthread_mutex_unlock(&sch->sched_lock);
     return (0);
 }
- 
+
+static int fifo_pick_next(struct s_scheduler *sch, int *out_id, long *out_deadline)
+{
+    struct s_fifo_queue *fifo_q;
+
+    fifo_q = (struct s_fifo_queue *)sch->data;
+    if (!fifo_q || !fifo_q->front)
+        return (-1);
+    *out_id = fifo_q->front->curr_id;
+    *out_deadline = 0;
+    return (0);
+}
+
 int init_fifo_scheduler(struct s_globalstate *gstate)
 {
     struct s_fifo_queue *fifo_q;
@@ -101,10 +113,10 @@ int init_fifo_scheduler(struct s_globalstate *gstate)
     fifo_q->back = NULL;
     fifo_q->front = NULL;
     fifo_q->count = 0;
-    gstate->scheduler->add_task = add_task ;
+    gstate->scheduler->add_task = add_task;
     gstate->scheduler->task_finished = task_finished;
     gstate->scheduler->remove_task = NULL;
-    gstate->scheduler->pick_next = NULL;
+    gstate->scheduler->pick_next = fifo_pick_next;
 
     return (0);
 }

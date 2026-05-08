@@ -30,17 +30,20 @@ static int safe_sleep(struct s_CoderState *s_arg, size_t ms)
 
 static int wait_for_my_turn(struct s_scheduler *sch, int my_id, struct s_CoderState *s_arg)
 {
-    struct s_fifo_queue *q;
+    int     front_id;
+    long    dl;
 
-    if (!sch || !sch->data)
+    if (!sch || !sch->pick_next)
         return (-1);
     if (pthread_mutex_lock(&sch->sched_lock) != 0)
         return (-1);
-    q = (struct s_fifo_queue *)sch->data;
-
-    while (!q->front || q->front->curr_id != my_id)
+    front_id = -1;
+    while (front_id != my_id)
     {
-        if (check_death(s_arg) != 0)  // check death while waiting
+        sch->pick_next(sch, &front_id, &dl);
+        if (front_id == my_id)
+            break ;
+        if (check_death(s_arg) != 0)
         {
             pthread_mutex_unlock(&sch->sched_lock);
             return (-1);
@@ -54,6 +57,7 @@ static int wait_for_my_turn(struct s_scheduler *sch, int my_id, struct s_CoderSt
     if (pthread_mutex_unlock(&sch->sched_lock) != 0)
         return (-1);
     return (0);
+
 }
 
 static int run_compile_round(struct s_CoderState *s_arg, struct s_scheduler *sch)
@@ -88,19 +92,22 @@ static int run_compile_round(struct s_CoderState *s_arg, struct s_scheduler *sch
 
 void coder_thread_comp(struct s_CoderState *s_arg)
 {
-    struct s_scheduler *sch;
+    struct s_scheduler  *sch;
+    long                deadline;
 
     sch = (struct s_scheduler *)s_arg->gconfig->scheduler;
     if (!s_arg->is_queued)
     {
-        if (sch->add_task(sch, s_arg->id, 0) == 0)
+        deadline = (long)(s_arg->arg->last_time_comp
+            + s_arg->gconfig->pconfig->time_to_burnout);
+        if (sch->add_task(sch, s_arg->id, deadline) == 0)
             s_arg->is_queued = 1;
         else
             return ;
     }
     if (wait_for_my_turn(s_arg->gconfig->scheduler, s_arg->id, s_arg) != 0)
     {
-        sch->task_finished(sch, s_arg->id); //free the node before exiting
+        sch->task_finished(sch, s_arg->id);
         s_arg->is_queued = 0;
         return ;
     }

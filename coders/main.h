@@ -44,6 +44,12 @@ struct s_fifo_queue
     size_t count;
 };
 
+struct s_edf_node {
+    int              curr_id;
+    long             deadline;
+    struct s_edf_node *next;
+};
+
 struct s_monitorstate {
     int is_someone_dead;
     unsigned int finished_coders;
