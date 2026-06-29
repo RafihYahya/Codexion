@@ -3,90 +3,82 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
+/*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/03 03:54:37 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 04:17:15 by alone            ###   ########.fr       */
+/*   Created: 2026/06/29 00:00:00 by yrafih            #+#    #+#             */
+/*   Updated: 2026/06/29 00:00:00 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "main.h"
 
-static void init_gstate(struct s_globalstate *gstate)
+static void	init_gstate(struct s_globalstate *gstate)
 {
-    gstate->cstates = NULL;
-    gstate->mstate = NULL;
-    gstate->pconfig = NULL;
-    gstate->thd = NULL;
-    gstate->states = NULL;
-    gstate->scheduler = NULL;
-    gstate->start_time_ms = 0;
-
-    return ;
+	gstate->pconfig = NULL;
+	gstate->states = NULL;
+	gstate->cstates = NULL;
+	gstate->mstate = NULL;
+	gstate->scheduler = NULL;
+	gstate->thd = NULL;
+	gstate->start_time_ms = 0;
 }
 
-int main(int argc, char **argv)
+static int	setup_resources(struct s_globalstate *gstate, int argc, char **argv)
 {
-    struct s_globalstate gstate;
+	gstate->pconfig = create_config(argc, argv);
+	if (!gstate->pconfig)
+		return (-1);
+	if (init_usb_mutexes_conds(gstate->pconfig->number_of_coders,
+			&(gstate->states)) < 0)
+		return (-1);
+	if (init_scheduler(gstate) < 0)
+		return (-1);
+	return (0);
+}
 
-    
-    init_gstate(&gstate);
-    gstate.pconfig = create_config(argc, argv);
-    DEBUG("Finished Parsing Configs");
-    if (!gstate.pconfig){
-        ERROR("Couldn't Parse Argv");    
-        return (-1);
-    }
-    // Init usb mutexes
-    DEBUG("Starting Mutexes ");
-    if (init_usb_mutexes_conds(gstate.pconfig->number_of_coders, &(gstate.states)) < 0)
-    {
-        ERROR("Failed Init of Mutexes");
-        return (free(gstate.states), free((void *)gstate.pconfig), -1); 
-    }
-    DEBUG("Finished Setting Mutexes");
-    // Init scheduler
-    DEBUG("Starting Scheduler");
-    if (init_scheduler(&gstate) < 0)
-    {
-        ERROR("Can't Init Scheduler");
-        return (free(gstate.states), free((void *)gstate.pconfig), -1);   
-    }
-    DEBUG("Finished Setting Scheduler");
-    // Setup print_mutex
-    if (pthread_mutex_init(&(gstate.print_lock), NULL) != 0)
-    {
-        ERROR("Failure Setting up Print Mutex Lock");
-        return (free(gstate.states), free((void *)gstate.pconfig), -1);
-    }
-    gstate.start_time_ms = get_curr_time_ms();
-    // Init Monitor thread
-    DEBUG("Starting Monitor Thread");
-    if (init_monitor_thread(&gstate) < 0)
-    {
-        ERROR("Failed Init of monitor thread");
-        return (free(gstate.states), free((void *)gstate.pconfig), -1);
-    }
-    DEBUG("Finished Setting Monitor Thread");
-    // Init coder thread
-    DEBUG("Starting Threads");
-    if (init_coder_threads(&gstate) < 0)
-    {
-        ERROR("Failed Init of Mutexes");
-        return (free(gstate.states), free((void *)gstate.pconfig), free(gstate.mstate), -1); 
-    }
-    // Join monitor
-    DEBUG("Waiting Here Until Monitor Join");
-    pthread_join(gstate.mstate->monitor, NULL);
-    // Join threads
-    size_t k = 0;
-    while (k < gstate.pconfig->number_of_coders)
-    {
-        pthread_join(gstate.thd[k], NULL);
-        k++;
-    }
-    DEBUG("End of Codexion Program");
-    mem_cleanup(&gstate);
-    return (0);
+static void	stop_and_join_coders(struct s_globalstate *gstate)
+{
+	size_t	k;
+
+	pthread_mutex_lock(&gstate->mstate->death_lock);
+	gstate->mstate->is_someone_dead = 1;
+	pthread_mutex_unlock(&gstate->mstate->death_lock);
+	k = 0;
+	while (k < gstate->pconfig->number_of_coders)
+		pthread_join(gstate->thd[k++], NULL);
+}
+
+static int	run_simulation(struct s_globalstate *gstate)
+{
+	size_t	k;
+
+	gstate->start_time_ms = get_curr_time_ms();
+	if (init_monitor_state(gstate) < 0)
+		return (-1);
+	if (init_coder_threads(gstate) < 0)
+		return (-1);
+	if (start_monitor(gstate) < 0)
+		return (stop_and_join_coders(gstate), -1);
+	pthread_join(gstate->mstate->monitor, NULL);
+	k = 0;
+	while (k < gstate->pconfig->number_of_coders)
+		pthread_join(gstate->thd[k++], NULL);
+	return (0);
+}
+
+int	main(int argc, char **argv)
+{
+	struct s_globalstate	gstate;
+
+	init_gstate(&gstate);
+	if (pthread_mutex_init(&(gstate.print_lock), NULL) != 0)
+		return (1);
+	if (setup_resources(&gstate, argc, argv) < 0
+		|| run_simulation(&gstate) < 0)
+	{
+		mem_cleanup(&gstate);
+		return (1);
+	}
+	mem_cleanup(&gstate);
+	return (0);
 }

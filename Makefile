@@ -1,8 +1,8 @@
 # Compiler
-CC = gcc
+CC = cc
 
 # Flags
-CFLAGS = -Wall -Wextra -pthread -fsanitize=address -g3 -DDEBUG_MODE -DSKIP_PARSE
+CFLAGS = -Wall -Wextra -Werror -pthread
 
 # Output name
 NAME = codexion
@@ -22,8 +22,10 @@ SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/thread.c \
        $(SRC_DIR)/thread2.c \
        $(SRC_DIR)/thread3.c \
+       $(SRC_DIR)/thread4.c \
        $(SRC_DIR)/thread_init.c \
-       $(SRC_DIR)/time.c
+       $(SRC_DIR)/time.c \
+       $(SRC_DIR)/utils.c
 
 # Object files (place .o files next to Makefile)
 OBJS = $(SRCS:$(SRC_DIR)/%.c=%.o)

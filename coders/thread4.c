@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   thread.c                                           :+:      :+:    :+:   */
+/*   thread4.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,35 +12,32 @@
 
 #include "main.h"
 
-int	check_death(struct s_coder *s_arg)
+int	coder_thread_debug(struct s_coder *s_arg)
 {
+	if (!check_time(s_arg))
+		return (safe_sleep(s_arg, s_arg->gconfig->pconfig->time_to_debug));
+	s_arg->state = REFACTOR;
+	s_arg->arg->last_time_refact = get_curr_time_ms();
+	log_state((struct s_globalstate *)s_arg->gconfig,
+		get_curr_time_ms() - s_arg->gconfig->start_time_ms,
+		s_arg->id + 1, "is refactoring");
+	return (1);
+}
+
+int	coder_thread_refactor(struct s_coder *s_arg)
+{
+	if (!check_time(s_arg))
+		return (safe_sleep(s_arg, s_arg->gconfig->pconfig->time_to_refactor));
 	pthread_mutex_lock(&(s_arg->mstate->death_lock));
-	if (s_arg->mstate->is_someone_dead == 1)
+	s_arg->arg->compiled_count++;
+	if (s_arg->arg->compiled_count
+		>= s_arg->gconfig->pconfig->number_of_compiles_required)
 	{
+		s_arg->mstate->finished_coders++;
 		pthread_mutex_unlock(&(s_arg->mstate->death_lock));
 		return (-1);
 	}
 	pthread_mutex_unlock(&(s_arg->mstate->death_lock));
+	s_arg->state = COMPILE;
 	return (0);
-}
-
-void	*coder_thread(void *arg)
-{
-	struct s_coder	*s_arg;
-
-	s_arg = (struct s_coder *)arg;
-	while (1)
-	{
-		if (check_death(s_arg) != 0)
-			return (NULL);
-		if (s_arg->state == COMPILE)
-			coder_thread_comp(s_arg);
-		else if (s_arg->state == DEBUGGING && coder_thread_debug(s_arg) == 1)
-			continue ;
-		else if (s_arg->state == REFACTOR
-			&& coder_thread_refactor(s_arg) != 0)
-			return (NULL);
-		usleep(1000);
-	}
-	return (NULL);
 }

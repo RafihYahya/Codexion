@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   thread.c                                           :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,35 +12,15 @@
 
 #include "main.h"
 
-int	check_death(struct s_coder *s_arg)
+void	put_error(const char *msg)
 {
-	pthread_mutex_lock(&(s_arg->mstate->death_lock));
-	if (s_arg->mstate->is_someone_dead == 1)
-	{
-		pthread_mutex_unlock(&(s_arg->mstate->death_lock));
-		return (-1);
-	}
-	pthread_mutex_unlock(&(s_arg->mstate->death_lock));
-	return (0);
+	fprintf(stderr, "%s\n", msg);
 }
 
-void	*coder_thread(void *arg)
+void	log_state(struct s_globalstate *g, size_t ts, unsigned int id,
+		const char *msg)
 {
-	struct s_coder	*s_arg;
-
-	s_arg = (struct s_coder *)arg;
-	while (1)
-	{
-		if (check_death(s_arg) != 0)
-			return (NULL);
-		if (s_arg->state == COMPILE)
-			coder_thread_comp(s_arg);
-		else if (s_arg->state == DEBUGGING && coder_thread_debug(s_arg) == 1)
-			continue ;
-		else if (s_arg->state == REFACTOR
-			&& coder_thread_refactor(s_arg) != 0)
-			return (NULL);
-		usleep(1000);
-	}
-	return (NULL);
+	pthread_mutex_lock(&g->print_lock);
+	printf("%zu %u %s\n", ts, id, msg);
+	pthread_mutex_unlock(&g->print_lock);
 }

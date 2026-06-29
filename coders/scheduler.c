@@ -3,51 +3,44 @@
 /*                                                        :::      ::::::::   */
 /*   scheduler.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: alone <alone@student.42.fr>                +#+  +:+       +#+        */
+/*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/03 03:54:14 by alone             #+#    #+#             */
-/*   Updated: 2026/03/03 03:54:15 by alone            ###   ########.fr       */
+/*   Created: 2026/06/29 00:00:00 by yrafih            #+#    #+#             */
+/*   Updated: 2026/06/29 00:00:00 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
 
-
-int init_scheduler(struct s_globalstate *gstate)
+static int	init_scheduler_sync(struct s_scheduler *sch)
 {
-    int     r_err;
+	if (pthread_mutex_init(&(sch->sched_lock), NULL) != 0)
+		return (-1);
+	if (pthread_cond_init(&(sch->sched_id), NULL) != 0)
+	{
+		pthread_mutex_destroy(&(sch->sched_lock));
+		return (-1);
+	}
+	sch->data = NULL;
+	return (0);
+}
 
-    r_err = 0;
-    if (!gstate)
-        return (-1);
-    gstate->scheduler = malloc(sizeof(struct s_scheduler));
-    if (!(gstate->scheduler))
-    {
-        ERROR("Malloc Fifo Scheduler Failed");
-        return (-1);
-    }
-    if (pthread_mutex_init(&(gstate->scheduler->sched_lock), NULL) != 0)
-    {
-        ERROR("Init schefuler Fifo Mutex Failed");
-        return (-1);
-    }
-    if (pthread_cond_init(&(gstate->scheduler->sched_id), NULL) != 0)
-    {
-        ERROR("Init schefuler Fifo Cond  Failed");
-        return (-1);
-    }
-    DEBUG("Finished Scheduler Setup");
-    DEBUG("Scheduler string: [%s], len: %zu", 
-        gstate->pconfig->scheduler, 
-        strlen(gstate->pconfig->scheduler));
-    if (strcmp(gstate->pconfig->scheduler, "fifo") == 0)
-        r_err = init_fifo_scheduler(gstate);
-    else if (strcmp(gstate->pconfig->scheduler, "edf") == 0)
-        r_err = init_edf_scheduler(gstate);
-    else 
-    {
-        ERROR("Input Invalid");
-        return (-1);
-    }
-    return (r_err);
+int	init_scheduler(struct s_globalstate *gstate)
+{
+	if (!gstate)
+		return (-1);
+	gstate->scheduler = malloc(sizeof(struct s_scheduler));
+	if (!(gstate->scheduler))
+		return (put_error("Error: malloc scheduler failed"), -1);
+	if (init_scheduler_sync(gstate->scheduler) != 0)
+	{
+		free(gstate->scheduler);
+		gstate->scheduler = NULL;
+		return (put_error("Error: init scheduler sync failed"), -1);
+	}
+	if (strcmp(gstate->pconfig->scheduler, "fifo") == 0)
+		return (init_fifo_scheduler(gstate));
+	if (strcmp(gstate->pconfig->scheduler, "edf") == 0)
+		return (init_edf_scheduler(gstate));
+	return (put_error("Error: invalid scheduler"), -1);
 }
