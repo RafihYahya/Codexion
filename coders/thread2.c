@@ -19,7 +19,8 @@
 ** thread_conc.c is the default, see USE_CONCURRENT in main.h).
 **
 ** Idea: one shared scheduler hands out a single compile turn at a time, so only
-** ever one coder holds dongles.
+** ever one coder holds dongles. Debugging and refactoring are unaffected and
+** still overlap freely across coders -- only the compile phase is serialized.
 **
 ** Pros: dead simple to reason about and defend. There is a single ordering
 ** point, so the FIFO/EDF order is global and exact, and it is deadlock- and
@@ -27,9 +28,10 @@
 ** section). Great for small rings, for demoing the scheduling order, or when
 ** you genuinely want compiles to happen one-by-one.
 **
-** Cons: zero parallelism. A coder waits about number_of_coders * time_to_compile
-** between its own compiles, so it burns out as soon as time_to_burnout is not
-** much larger than that. It does not scale to many coders or tight deadlines.
+** Cons: the compile phase is the bottleneck -- only one coder compiles at a
+** time. A coder waits about number_of_coders * time_to_compile for its turn and
+** burns out once time_to_burnout is not much larger than that, so it does not
+** scale to many coders or tight deadlines.
 **
 ** The concurrent model trades this simplicity for throughput: non-adjacent
 ** coders compile in parallel and each dongle arbitrates its own waiters, which
