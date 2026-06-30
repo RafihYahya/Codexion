@@ -12,21 +12,30 @@
 
 #include "main.h"
 
-int	safe_sleep(struct s_coder *s_arg, size_t ms)
-{
-	size_t	elapsed;
+#ifndef USE_CONCURRENT
 
-	elapsed = 0;
-	while (elapsed < ms)
-	{
-		if (check_death(s_arg) != 0)
-			return (-1);
-		usleep(1000);
-		elapsed++;
-	}
-	return (0);
-}
-
+/*
+** Original, serialized model (kept as a reference; the concurrent model in
+** thread_conc.c is the default, see USE_CONCURRENT in main.h).
+**
+** Idea: one shared scheduler hands out a single compile turn at a time, so only
+** ever one coder holds dongles.
+**
+** Pros: dead simple to reason about and defend. There is a single ordering
+** point, so the FIFO/EDF order is global and exact, and it is deadlock- and
+** starvation-free almost by construction (no hold-and-wait, only one critical
+** section). Great for small rings, for demoing the scheduling order, or when
+** you genuinely want compiles to happen one-by-one.
+**
+** Cons: zero parallelism. A coder waits about number_of_coders * time_to_compile
+** between its own compiles, so it burns out as soon as time_to_burnout is not
+** much larger than that. It does not scale to many coders or tight deadlines.
+**
+** The concurrent model trades this simplicity for throughput: non-adjacent
+** coders compile in parallel and each dongle arbitrates its own waiters, which
+** is what survives realistic parameters and large rings. Prefer it for anything
+** that must keep every coder alive under load.
+*/
 static int	wait_for_my_turn(struct s_scheduler *sch, int my_id,
 		struct s_coder *s_arg)
 {
@@ -101,3 +110,5 @@ void	coder_thread_comp(struct s_coder *s_arg)
 	}
 	run_compile_round(s_arg, sch);
 }
+
+#endif

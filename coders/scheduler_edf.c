@@ -6,11 +6,13 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/29 00:00:00 by yrafih            #+#    #+#             */
-/*   Updated: 2026/06/29 00:00:00 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/06/30 00:00:00 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
+
+#ifndef USE_CONCURRENT
 
 /*
 ** EDF order: earliest deadline first. Tie-break: higher coder id first,
@@ -104,3 +106,5 @@ int	init_edf_scheduler(struct s_globalstate *gstate)
 	gstate->scheduler->pick_next = edf_pick_next;
 	return (0);
 }
+
+#endif

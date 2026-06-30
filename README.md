@@ -38,6 +38,17 @@ make re         # full rebuild
 The project is compiled with `cc -Wall -Wextra -Werror -pthread` and contains no
 global variables.
 
+Two scheduler models are shipped, selected at compile time by the
+`USE_CONCURRENT` macro in `coders/main.h` (defined by default):
+
+- **defined (default)** — the concurrent model: non-adjacent coders compile in
+  parallel and each dongle arbitrates its own waiters.
+- **commented out** — the original model: a single hot-swappable scheduler
+  serialises the compile turns.
+
+Both build from the same `make`; the inactive model's files compile to empty
+objects.
+
 ### Execution
 
 ```sh
@@ -95,20 +106,23 @@ synchronization decision is explained below.
 
 - **Deadlock prevention (Coffman's conditions).** Each dongle is a separate
   resource guarded by its own mutex, so mutual exclusion is unavoidable, but the
-  other three Coffman conditions are neutralised: a coder only attempts to grab
-  dongles once the scheduler has granted it its compile turn, every blocking
-  wait is a bounded `pthread_cond_timedwait`, and a global stop flag breaks any
-  potential circular wait. As a result no set of coders can hold-and-wait on
-  each other indefinitely.
-- **Starvation prevention / liveness.** Under `fifo` requests are served in
-  arrival order; under `edf` the coder with the earliest burnout deadline
-  (`last_compile_start + time_to_burnout`) is served first, with a deterministic
-  tie-breaker (higher coder id wins on equal deadlines). The most at-risk coder
-  is therefore always prioritised.
+  circular-wait condition is broken: even-numbered coders acquire their left
+  dongle first while odd-numbered coders acquire their right dongle first, so no
+  cyclic chain of "holds one, waits for the next" can ever form around the ring.
+  Every blocking wait is additionally a bounded `pthread_cond_timedwait`, and a
+  global stop flag releases all waiters at once, so no set of coders can block
+  each other indefinitely. (In the alternative serialized model, deadlock is
+  instead avoided by granting only one compile turn at a time.)
+- **Starvation prevention / liveness.** Each dongle keeps its own waiting queue.
+  Under `fifo` it serves requests in arrival order; under `edf` it serves the
+  coder with the earliest burnout deadline (`last_compile_start +
+  time_to_burnout`), with a deterministic tie-breaker (higher coder id wins on
+  equal deadlines). The most at-risk coder is therefore always prioritised, so a
+  coder cannot be starved while a neighbour with a later deadline keeps the
+  dongle.
 - **Cooldown handling.** When a dongle is released its release timestamp is
-  recorded; it cannot be taken again until `dongle_cooldown` milliseconds have
-  elapsed. The waiting is implemented with `pthread_cond_timedwait` so a coder
-  sleeps exactly until the dongle becomes available.
+  recorded; `can_take` refuses it until `dongle_cooldown` milliseconds have
+  elapsed, and the waiter re-checks on each `pthread_cond_timedwait` wake-up.
 - **Precise burnout detection.** A dedicated monitor thread polls every
   millisecond and compares each coder's elapsed time since its last compile
   against `time_to_burnout`, so a burnout is reported well within the required
@@ -121,13 +135,17 @@ synchronization decision is explained below.
 The implementation relies exclusively on `pthread_mutex_t` and `pthread_cond_t`.
 
 - **`usb_mutex` + `usb_rec_cond` (one pair per dongle).** Protect each dongle's
-  `is_available` flag and cooldown timestamp. This is what guarantees a dongle
-  is never duplicated: a coder can only mark a dongle as taken while holding its
-  mutex. The condition variable wakes coders when a dongle is released or its
-  cooldown expires.
-- **`sched_lock` + `sched_id` (scheduler).** Protect the scheduling queue
-  (FIFO list / EDF ordered list) and signal coders when the front of the queue
-  changes, so the next coder can take its compile turn.
+  `is_available` flag, cooldown timestamp and its per-dongle waiting queue. This
+  is what guarantees a dongle is never duplicated: a coder can only mark a dongle
+  as taken while holding its mutex, and only when it is the head of that dongle's
+  arbitration queue. The condition variable wakes waiters when the dongle is
+  released.
+- **Hot-swappable scheduler (`s_policy`).** A single function-pointer vtable
+  selects the arbitration policy. Only the queue-insertion differs between
+  policies (FIFO appends, EDF inserts by deadline), so swapping `fifo` for `edf`
+  swaps one function pointer; the granted coder is always the queue head. (The
+  serialized model keeps the same idea with an `s_scheduler` vtable of
+  `add_task`/`pick_next`/`task_finished`.)
 - **`death_lock` (monitor state).** Protects the shared simulation state:
   `is_someone_dead`, `finished_coders`, and each coder's `last_time_comp` and
   `compiled_count`. This is the channel between the coders and the monitor: a

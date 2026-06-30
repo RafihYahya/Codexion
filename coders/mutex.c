@@ -32,6 +32,7 @@ int	init_usb_mutexes_conds(int num_usb, struct s_usb **usb_mutexes)
 		}
 		(*usb_mutexes)[i].cdown_start = 0;
 		(*usb_mutexes)[i].is_available = 1;
+		(*usb_mutexes)[i].waitq = NULL;
 		i++;
 	}
 	return (0);

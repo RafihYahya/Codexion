@@ -6,11 +6,13 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/29 00:00:00 by yrafih            #+#    #+#             */
-/*   Updated: 2026/06/29 00:00:00 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/06/30 00:00:00 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
+
+#ifndef USE_CONCURRENT
 
 static void	remove_node(struct s_fifo_queue *fifo_q, struct s_node *prev,
 		struct s_node *curr)
@@ -105,3 +107,5 @@ int	init_fifo_scheduler(struct s_globalstate *gstate)
 	gstate->scheduler->pick_next = fifo_pick_next;
 	return (0);
 }
+
+#endif

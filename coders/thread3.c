@@ -12,6 +12,8 @@
 
 #include "main.h"
 
+#ifndef USE_CONCURRENT
+
 static int	mark_usb_taken(struct s_coder *s_arg, struct s_usb *usb)
 {
 	usb->is_available = 0;
@@ -95,3 +97,5 @@ int	put_usb(struct s_coder *s_arg, int direc)
 		return (-1);
 	return (0);
 }
+
+#endif

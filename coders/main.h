@@ -13,6 +13,9 @@
 #ifndef MAIN_H
 # define MAIN_H
 
+/* Comment the next line to build the original (serialized) scheduler model. */
+# define USE_CONCURRENT
+
 # include <unistd.h>
 # include <stdlib.h>
 # include <stdio.h>
@@ -39,12 +42,20 @@ struct s_config
 	char			scheduler[5];
 };
 
+struct s_req
+{
+	int				id;
+	long			deadline;
+	struct s_req	*next;
+};
+
 struct s_usb
 {
 	pthread_mutex_t	usb_mutex;
 	pthread_cond_t	usb_rec_cond;
 	int				is_available;
 	size_t			cdown_start;
+	struct s_req	*waitq;
 };
 
 struct s_coder_arg
@@ -74,6 +85,11 @@ struct s_scheduler
 	void			*data;
 };
 
+struct s_policy
+{
+	int	(*enqueue)(struct s_usb *d, int id, long deadline);
+};
+
 struct s_globalstate
 {
 	const struct s_config	*pconfig;
@@ -81,6 +97,7 @@ struct s_globalstate
 	struct s_coder			*cstates;
 	struct s_monitorstate	*mstate;
 	struct s_scheduler		*scheduler;
+	struct s_policy			*policy;
 	size_t					start_time_ms;
 	pthread_mutex_t			print_lock;
 	pthread_t				*thd;
@@ -127,6 +144,7 @@ void			log_state(struct s_globalstate *g, size_t ts,
 					unsigned int id, const char *msg);
 void			coder_thread_comp(struct s_coder *s_arg);
 void			mem_cleanup(struct s_globalstate *gstate);
+void			cleanup_sched(struct s_globalstate *gstate);
 void			*coder_thread(void *arg);
 struct s_config	*create_config(int argc, char **argv);
 int				init_monitor_state(struct s_globalstate *gstate);
@@ -144,6 +162,8 @@ int				coder_thread_debug(struct s_coder *s_arg);
 int				safe_sleep(struct s_coder *s_arg, size_t ms);
 int				take_usb(struct s_coder *s_arg, int direc);
 int				put_usb(struct s_coder *s_arg, int direc);
+int				take_dongle(struct s_coder *s_arg, struct s_usb *usb);
+int				put_dongle(struct s_coder *s_arg, struct s_usb *usb);
 int				check_death(struct s_coder *s_arg);
 
 #endif

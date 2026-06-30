@@ -6,11 +6,13 @@
 /*   By: yrafih <yrafih@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/29 00:00:00 by yrafih            #+#    #+#             */
-/*   Updated: 2026/06/29 00:00:00 by yrafih           ###   ########.fr       */
+/*   Updated: 2026/06/30 00:00:00 by yrafih           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "main.h"
+
+#ifndef USE_CONCURRENT
 
 static int	init_scheduler_sync(struct s_scheduler *sch)
 {
@@ -23,6 +25,52 @@ static int	init_scheduler_sync(struct s_scheduler *sch)
 	}
 	sch->data = NULL;
 	return (0);
+}
+
+static void	free_edf_data(struct s_scheduler *sch)
+{
+	struct s_edf_node	*cur;
+	struct s_edf_node	*next;
+
+	cur = (struct s_edf_node *)sch->data;
+	while (cur)
+	{
+		next = cur->next;
+		free(cur);
+		cur = next;
+	}
+}
+
+static void	free_fifo_data(struct s_scheduler *sch)
+{
+	struct s_fifo_queue	*q;
+	struct s_node		*curr;
+	struct s_node		*next;
+
+	if (!sch->data)
+		return ;
+	q = (struct s_fifo_queue *)sch->data;
+	curr = q->front;
+	while (curr)
+	{
+		next = curr->next;
+		free(curr);
+		curr = next;
+	}
+	free(q);
+}
+
+void	cleanup_sched(struct s_globalstate *g)
+{
+	if (!g->scheduler)
+		return ;
+	if (g->pconfig && strcmp(g->pconfig->scheduler, "edf") == 0)
+		free_edf_data(g->scheduler);
+	else
+		free_fifo_data(g->scheduler);
+	pthread_mutex_destroy(&(g->scheduler->sched_lock));
+	pthread_cond_destroy(&(g->scheduler->sched_id));
+	free(g->scheduler);
 }
 
 int	init_scheduler(struct s_globalstate *gstate)
@@ -44,3 +92,5 @@ int	init_scheduler(struct s_globalstate *gstate)
 		return (init_edf_scheduler(gstate));
 	return (put_error("Error: invalid scheduler"), -1);
 }
+
+#endif

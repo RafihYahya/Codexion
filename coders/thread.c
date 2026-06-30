@@ -24,6 +24,21 @@ int	check_death(struct s_coder *s_arg)
 	return (0);
 }
 
+int	safe_sleep(struct s_coder *s_arg, size_t ms)
+{
+	size_t	elapsed;
+
+	elapsed = 0;
+	while (elapsed < ms)
+	{
+		if (check_death(s_arg) != 0)
+			return (-1);
+		usleep(1000);
+		elapsed++;
+	}
+	return (0);
+}
+
 void	*coder_thread(void *arg)
 {
 	struct s_coder	*s_arg;

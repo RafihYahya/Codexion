@@ -19,6 +19,7 @@ static void	init_gstate(struct s_globalstate *gstate)
 	gstate->cstates = NULL;
 	gstate->mstate = NULL;
 	gstate->scheduler = NULL;
+	gstate->policy = NULL;
 	gstate->thd = NULL;
 	gstate->start_time_ms = 0;
 }
