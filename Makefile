@@ -19,6 +19,7 @@ SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/scheduler.c \
        $(SRC_DIR)/scheduler_edf.c \
        $(SRC_DIR)/scheduler_fifo.c \
+       $(SRC_DIR)/scheduler_random.c \
        $(SRC_DIR)/policy_conc.c \
        $(SRC_DIR)/dongle_conc.c \
        $(SRC_DIR)/thread.c \

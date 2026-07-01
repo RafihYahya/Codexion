@@ -90,6 +90,8 @@ int	init_scheduler(struct s_globalstate *gstate)
 		return (init_fifo_scheduler(gstate));
 	if (strcmp(gstate->pconfig->scheduler, "edf") == 0)
 		return (init_edf_scheduler(gstate));
+	if (strcmp(gstate->pconfig->scheduler, "random") == 0)
+		return (init_random_scheduler(gstate));
 	return (put_error("Error: invalid scheduler"), -1);
 }
 

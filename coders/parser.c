@@ -12,6 +12,21 @@
 
 #include "main.h"
 
+/*
+** The random scheduler only exists in the serialized (old) model, so the
+** concurrent build must keep rejecting it. The 42 Norm forbids globals and
+** in-function preprocessor and only allows constant defines, so we gate the
+** third accepted name with a constant: "random" in the old model, and a
+** harmless duplicate of "edf" in the concurrent build (accepts nothing new).
+*/
+#ifndef USE_CONCURRENT
+# define SCHED_EXTRA "random"
+# define SCHED_ERR "Error: scheduler must be fifo, edf or random"
+#else
+# define SCHED_EXTRA "edf"
+# define SCHED_ERR "Error: scheduler must be fifo or edf"
+#endif
+
 static int	ft_isdigit_str(const char *s)
 {
 	if (!s || !*s)
@@ -40,8 +55,9 @@ static int	ft_validate_args(int argc, char **argv)
 				-1);
 		i++;
 	}
-	if (strcmp(argv[8], "fifo") != 0 && strcmp(argv[8], "edf") != 0)
-		return (put_error("Error: scheduler must be fifo or edf"), -1);
+	if (strcmp(argv[8], "fifo") != 0 && strcmp(argv[8], "edf") != 0
+		&& strcmp(argv[8], SCHED_EXTRA) != 0)
+		return (put_error(SCHED_ERR), -1);
 	return (0);
 }
 

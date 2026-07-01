@@ -39,7 +39,7 @@ struct s_config
 	size_t			time_to_debug;
 	size_t			time_to_refactor;
 	size_t			dongle_cooldown;
-	char			scheduler[5];
+	char			scheduler[8];
 };
 
 struct s_req
@@ -135,6 +135,18 @@ struct s_edf_node
 	struct s_edf_node	*next;
 };
 
+/*
+** Old-model random scheduler queue. Keep "head" first: it is layout-compatible
+** with s_fifo_queue's "front", so free_fifo_data (scheduler.c) also frees this.
+*/
+struct s_rand_queue
+{
+	struct s_node	*head;
+	size_t			count;
+	int				pick_id;
+	unsigned int	seed;
+};
+
 size_t			get_curr_time_ms(void);
 size_t			check_time(struct s_coder *s_arg);
 size_t			get_abs_timeout_from_now_ms(size_t wait_ms,
@@ -156,6 +168,7 @@ int				argv_parser_validator(int argc, char **argv,
 					struct s_config *s);
 int				init_fifo_scheduler(struct s_globalstate *gstate);
 int				init_edf_scheduler(struct s_globalstate *gstate);
+int				init_random_scheduler(struct s_globalstate *gstate);
 int				coder_thread_refactor(struct s_coder *s_arg);
 int				init_coder_threads(struct s_globalstate *gstate);
 int				coder_thread_debug(struct s_coder *s_arg);
